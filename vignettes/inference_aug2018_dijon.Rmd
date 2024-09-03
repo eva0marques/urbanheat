@@ -1,0 +1,254 @@
+---
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+library(data.table)
+library(INLA)
+library(ggplot2)
+```
+
+## Open data
+
+```{r}
+car <- data.table::fread("../input/car_processed_for_bhm.csv") |>
+  data_bhm(temp = "temp",
+           lat = "lat",
+           lon = "lon",
+           time = "time",
+           build_h = "H_MEAN",
+           build_d = "BUILD_DENS",
+           dem = "alt",
+           network = "car")
+cws <- data.table::fread("../input/cws_processed_for_bhm.csv")  |>
+  data_bhm(temp = "temp",
+           lat = "lat",
+           lon = "lon",
+           time = "time",
+           build_h = "H_MEAN",
+           build_d = "BUILD_DENS",
+           dem = "alt.y",
+           network = "cws")
+pro <- data.table::fread("../input/mustardijon_2018010100_2018123123.csv") |>
+  data_bhm(temp = "TEMP",
+           lat = "LATITUDE",
+           lon = "LONGITUDE",
+           time = "DATE",
+           build_h = "H_MEAN",
+           build_d = "BUILD_DENS",
+           dem = "ALTITUDE",
+           network = "mustardijon")
+```
+
+#### Border
+
+borders \<- terra::vect("../input/Dijon.shp")
+
+```{r}
+borders <- sf::st_read("../input/Dijon.shp") |>
+  sf::st_transform(crs = "epsg:4326") # metric unit
+  #sf::st_transform(crs = "epsg:2154") # metric unit
+```
+
+obs \<- data_bhm() grid \<- create_grid() sw \<- aws_dijon\$sw
+
+config_car \<- list( car_bhm = car_samp, grid = , sw = , borders = )
+
+Open prediction grid
+
+```{r}
+format_pred <- function(x, lat, lon, build_h, build_d, dem){
+  x <- as.data.frame(x)
+  y <- x |>
+    dplyr::rename("lat" = lat) |>
+    dplyr::rename("lon" = lon) |>
+    dplyr::rename("build_h" = build_h) |>
+    dplyr::rename("build_d" = build_d) |>
+    dplyr::rename("dem" = dem)
+  y <- y[, c("lat", "lon", "build_h", "build_d", "dem")]
+}
+
+pred <- data.table::fread("../input/prediction_grid_mapuce_dem.csv") |>
+  format_pred("lat", "lon", "H_MEAN", "BUILD_DENS", "dem")
+```
+
+#### Open shortwave data from radome station
+
+```{r}
+rad <- read.csv("../input/radome_2018010100_2019010100_dijonlongevic.csv")
+rad$DATE <- as.POSIXct(rad$DATE, tz = "UTC")
+```
+
+Test model for 1 timestamp
+
+```{r}
+ts <- as.POSIXct("2018-08-04 23:00:00", tz = "UTC")
+sw <- rad[which(rad$DATE == ts), "GLO"]
+temp_reg <- rad[which(rad$DATE == ts), "T"]
+test <- run_bhm_join(car = car,
+                     cws = cws,
+                     pred = pred,
+                     ts = ts,
+                     sw = sw,
+                     temp_reg = temp_reg,
+                     borders = borders)
+summary(test$mod_joint)
+summary(test$mod_car)
+summary(test$mod_cws)
+p1 <- plot_pred_mean_car(test$pred)
+p2 <- plot_pred_mean_cws(test$pred)
+p3 <- plot_pred_mean(test$pred)
+ggpubr::ggarrange(p1, p2, p3, ncol = 3)
+extract_marginals(test$mod_joint)
+plot_marginals_joint(test$mod_joint)
+eval <- evaluate_pred(test$pred, pro)
+plot(eval$pro$temp, eval$pro$res_joint)
+eval
+```
+
+Test model on a period
+
+Pb at 2018082000
+
+```{r}
+
+t_start <- as.POSIXct("2018-08-31 01:00:00", tz = "UTC")
+t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
+period <- seq(t_start, t_end, by = "1 hour")
+for (p in period) {
+  p_str <- strftime(p, format = "%Y-%m-%d %H:%M:%S", tz = "UTC") |>
+    as.POSIXct(tz = "UTC")
+  sw <- rad[which(rad$DATE == p_str), "GLO"]
+  temp_reg <- rad[which(rad$DATE == p_str), "T"]
+  inference <- run_bhm_join(car = car,
+                     cws = cws,
+                     pred = pred,
+                     ts = p_str,
+                     sw = sw,
+                     temp_reg = temp_reg,
+                     borders = borders)
+  saveRDS(object = inference,
+          file = paste0("../output2/model_inference_",
+                        format(p_str, "%Y%m%d%H"),
+                        ".rds"))
+}
+```
+
+Plot predictions of a model
+
+```{r}
+test <- readRDS("../output2/model_inference_2018083123.rds")
+summary(test$mod_joint)
+p1 <- plot_pred_mean_car(test$pred)
+p2 <- plot_pred_mean_cws(test$pred)
+p3 <- plot_pred_mean(test$pred)
+ggpubr::ggarrange(p1, p2, p3, ncol = 3)
+```
+
+Extract marginals info
+
+```{r}
+extract_marginals(test$mod_joint)
+plot_marginals_joint(test$mod_joint)
+eval <- evaluate_pred(test$pred, pro)
+plot(eval$pro$temp, eval$pro$res_joint)
+eval
+```
+
+Extract RMSE
+
+```{r}
+t_start <- as.POSIXct("2018-08-01 00:00:00", tz = "UTC")
+t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
+period <- seq(t_start, t_end, by = "1 hour")
+rmse_car <- c()
+rmse_cws <- c()
+rmse_joint <- c()
+time <- c()
+for (p in seq_along(period)) {
+#for (p in 456:744) {
+  p_str <- strftime(period[p], format = "%Y-%m-%d %H:%M:%S", tz = "UTC") |>
+    as.POSIXct(tz = "UTC")
+  print(period[p])
+  fpath <- paste0("../output2/model_inference_",
+                                   format(p_str, "%Y%m%d%H"),
+                                   ".rds")
+  if (!file.exists(fpath)) {
+    cat("file not found \n")
+  } else {
+    results <- readRDS(file = fpath)
+    eval <- evaluate_pred(results$pred, pro)
+    time <- c(time, strftime(period[p], format = "%Y-%m-%d %H:%M:%S", tz = "UTC"))
+    rmse_car <- c(rmse_car, eval$rmse_car)
+    rmse_cws <- c(rmse_cws, eval$rmse_cws)
+    rmse_joint <- c(rmse_joint, eval$rmse_joint)
+  }
+}
+x <- as.data.frame(cbind(time, rmse_car, rmse_cws, rmse_joint))
+x$rmse_joint <- as.numeric(x$rmse_joint)
+x$rmse_car <- as.numeric(x$rmse_car)
+x$rmse_cws <- as.numeric(x$rmse_cws)
+x$time <- as.POSIXct(x$time, tz = "UTC")
+saveRDS(x, "../output2/rmse.rds")
+```
+
+```{r}
+ggplot(x) +
+  geom_histogram(aes(x = rmse_car), binwidth = 0.1) +
+  xlim(c(0, 3))
+ggplot(x) +
+  geom_histogram(aes(x = rmse_cws), binwidth = 0.1) +
+  xlim(c(0, 3))
+ggplot(x) +
+  geom_histogram(aes(x = rmse_joint), binwidth = 0.1) +
+  xlim(c(0, 3))
+```
+
+```{r}
+hist(rmse_joint - rmse_car, breaks = seq(-25, 2, 0.2))
+```
+
+```{r}
+p <- ggplot2::ggplot(
+    x,
+    aes(
+      y = as.Date(time),
+      x = lubridate::hour(time),
+      fill = rmse_joint
+    )
+  ) +
+    geom_tile() +
+    scale_fill_stepsn(colours = c("white", "firebrick4"),
+                      breaks = seq(0, 2, .2),
+                      limits = c(0, 2)) +
+    labs(
+      x = "hour",
+      y = "date"
+    ) +
+    scale_y_date(
+      date_labels = "%m-%d",
+      date_breaks = "3 days",
+      date_minor_breaks = "1 day"
+    ) +
+    #guides(fill = guide_colourbar(barwidth = 0.7, barheight = 25)) +
+    theme(
+      axis.text = element_text(size = 12),
+      plot.caption = element_text(size = 10),
+      legend.text = element_text(size = 12),
+      legend.title = element_text(size = 12),
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major = element_line(colour = "grey"),
+      panel.grid.minor = element_line(colour = "azure2"),
+      legend.position = "right"
+    )
+p
+```
+
+```{r}
+ggplot(x) +
+  geom_line(aes(x = time, y = rmse_car), color = "red") +
+  geom_line(aes(x = time, y = rmse_cws), color = "blue") +
+  geom_line(aes(x = time, y = rmse_joint), color = "cyan") 
+```
