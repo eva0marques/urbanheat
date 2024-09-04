@@ -84,16 +84,16 @@ rad$DATE <- as.POSIXct(rad$DATE, tz = "UTC")
 Test model for 1 timestamp
 
 ```{r}
-ts <- as.POSIXct("2018-08-04 23:00:00", tz = "UTC")
+ts <- as.POSIXct("2018-08-02 05:00:00", tz = "UTC")
 sw <- rad[which(rad$DATE == ts), "GLO"]
 temp_reg <- rad[which(rad$DATE == ts), "T"]
-test <- run_bhm_join(car = car,
-                     cws = cws,
-                     pred = pred,
-                     ts = ts,
-                     sw = sw,
-                     temp_reg = temp_reg,
-                     borders = borders)
+test <- run_bhm(car = car,
+                cws = cws,
+                pred = pred,
+                ts = ts,
+                sw = sw,
+                temp_reg = temp_reg,
+                borders = borders)
 summary(test$mod_joint)
 summary(test$mod_car)
 summary(test$mod_cws)
@@ -103,17 +103,23 @@ p3 <- plot_pred_mean(test$pred)
 ggpubr::ggarrange(p1, p2, p3, ncol = 3)
 extract_marginals(test$mod_joint)
 plot_marginals_joint(test$mod_joint)
-eval <- evaluate_pred(test$pred, pro)
+eval <- evaluate_pred(test$pred, pro, info = test$info)
 plot(eval$pro$temp, eval$pro$res_joint)
 eval
 ```
 
+```{r}
+map_pred_mean(test$pred, eval$pro, borders)
+map_pred_sd(test$pred, borders)
+map_obs(car, cws, ts = unique(test$pred$time), borders)
+```
+
 Test model on a period
 
-Pb at 2018082000
+Pb at 2018082000 and 2018083100: no data?
 
 ```{r}
-
+set.seed(12)
 t_start <- as.POSIXct("2018-08-31 01:00:00", tz = "UTC")
 t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
 period <- seq(t_start, t_end, by = "1 hour")
@@ -122,7 +128,7 @@ for (p in period) {
     as.POSIXct(tz = "UTC")
   sw <- rad[which(rad$DATE == p_str), "GLO"]
   temp_reg <- rad[which(rad$DATE == p_str), "T"]
-  inference <- run_bhm_join(car = car,
+  inference <- run_bhm(car = car,
                      cws = cws,
                      pred = pred,
                      ts = p_str,
