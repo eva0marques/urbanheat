@@ -94,27 +94,30 @@ test <- run_bhm(car = car,
                 sw = sw,
                 temp_reg = temp_reg,
                 borders = borders)
+test$info <- add_post_to_info(test$mod_joint, test$info)
 summary(test$mod_joint)
 summary(test$mod_car)
 summary(test$mod_cws)
+eval <- evaluate_pred(test$pred, pro, info = test$info)
+eval 
+
+plot(eval$pro$temp_sea, eval$pro$res_joint)
+
+# deprecated plotting functions
 p1 <- plot_pred_mean_car(test$pred)
 p2 <- plot_pred_mean_cws(test$pred)
 p3 <- plot_pred_mean(test$pred)
 ggpubr::ggarrange(p1, p2, p3, ncol = 3)
-test$info <- add_post_to_info(test$mod_joint, test$info)
 plot_marginals_joint(test$mod_joint)
-eval <- evaluate_pred(test$pred, pro, info = test$info)
-plot(eval$pro$temp, eval$pro$res_joint)
-eval
 ```
 
 ```{r}
-map_pred_mean(test$pred, eval$pro, borders)
+map_pred_mean(test$pred, eval$pro, borders, "temp_sea", "joint")
 map_pred_sd(test$pred, borders)
-map_obs(car, cws, ts = unique(test$pred$time), borders)
-plot_obs_int(test$info)
-plot_hyperprec(test$mod_joint, test$info)
-plot_beta_covar(test$info)
+map_obs(car, cws, ts = unique(test$pred$time), borders, y_var = "temp_sea")
+density_obs_intercept(test$info)
+density_hyperprec(test$mod_joint, test$info)
+density_beta_covar(test$info)
 ```
 
 Test model on a period

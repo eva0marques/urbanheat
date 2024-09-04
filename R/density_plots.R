@@ -1,4 +1,4 @@
-plot_obs_int <- function(info) {
+density_obs_intercept <- function(info) {
   linetype <- c("simul" = "solid", "prior" = "dotted", "post" = "dashed")
   color <- c("car" = "#FF0800", "cws" = "#00BFFF")
   p <- ggplot(data = data.frame(x = c(-3, 3)), aes(x)) +
@@ -8,7 +8,8 @@ plot_obs_int <- function(info) {
         mean = info$mu_car,
         sd = sqrt(1 / info$prec_beta)
       ),
-      aes(color = "car", linetype = "prior")
+      aes(color = "car", linetype = "prior"),
+      linewidth = 1
     ) +
     stat_function(
       fun = dnorm, n = 101,
@@ -16,7 +17,8 @@ plot_obs_int <- function(info) {
         mean = info$int_car_mean,
         sd = info$int_car_sd
       ),
-      aes(color = "car", linetype = "post")
+      aes(color = "car", linetype = "post"),
+      linewidth = 1
     ) +
     stat_function(
       fun = dnorm, n = 101,
@@ -24,7 +26,8 @@ plot_obs_int <- function(info) {
         mean = info$mu_cws,
         sd = sqrt(1 / info$prec_beta)
       ),
-      aes(color = "cws", linetype = "prior")
+      aes(color = "cws", linetype = "prior"),
+      linewidth = 1
     ) +
     stat_function(
       fun = dnorm, n = 101,
@@ -32,32 +35,36 @@ plot_obs_int <- function(info) {
         mean = info$int_cws_mean,
         sd = info$int_cws_sd
       ),
-      aes(color = "cws", linetype = "post")
+      aes(color = "cws", linetype = "post"),
+      linewidth = 1
     ) +
-    ggtitle("car and cws intercepts") +
     scale_color_manual("", values = color) +
     scale_linetype_manual("", values = linetype) +
+    scale_x_continuous(breaks = seq(-3, 3, 1), limits = c(-3, 3)) +
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
       legend.box = "vertical",
       axis.title = element_blank(),
       axis.text.x = element_text(size = 18),
-      axis.text.y = element_text(
-        size = 18,
-        angle = 90,
-        hjust = .5
-      ),
+      axis.text.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      panel.background = element_rect(fill = "white"),
-      panel.grid.major = element_line(colour = "grey")
+      legend.margin=margin(0,0,0,0),
+      legend.box.spacing = unit(0, "pt"),
+      legend.text.align = 0,
+      legend.key.width = unit(1, 'cm'),
+      panel.grid.major.x = element_line(color="grey", size = 0.2),
+      panel.background = element_rect(fill = "white")
     )
   return(p)
 }
 
-plot_beta_covar <- function(info) {
+density_beta_covar <- function(info) {
   linetype <- c("prior" = "dashed", "post" = "solid")
   color <- c(
     "dem" = "darkgreen",
@@ -132,29 +139,10 @@ plot_beta_covar <- function(info) {
       panel.background = element_rect(fill = "white")
     ) +
     guides(linetype = guide_legend(nrow = 2), color = guide_legend(nrow = 3))
-
-
-    # theme(
-    #   axis.text.x = element_text(size = 20, family = "sans serif"),
-    #   axis.text.y = element_blank(),
-    #   axis.title.x = element_blank(),
-    #   axis.title.y = element_blank(),
-    #   axis.ticks.y = element_blank(),
-    #   legend.key.width = unit(1, "cm"),
-    #   panel.grid.major.x = element_line(color = "grey", size = 0.2),
-    #   legend.text = element_text(size = 20, family = "sans serif"),
-    #   plot.caption = element_text(size = 20, family = "sans serif"),
-    #   legend.title = element_text(size = 22, family = "sans serif"),
-    #   legend.position = "bottom",
-    #   legend.box = "vertical",
-    #   legend.margin = margin(0, 0, 0, 0),
-    #   legend.box.spacing = unit(0, "pt"),
-    #   legend.text.align = 0
-    # )
   return(p)
 }
 
-plot_hyperprec <- function(mod, info) {
+density_hyperprec <- function(mod, info) {
   # precision for gaussian observations
   list_marg <- mod$marginals.hyperpar
   names(list_marg) <- c("prec_car", "prec_cws", "range_s", "sd_s")
@@ -223,7 +211,7 @@ plot_hyperprec <- function(mod, info) {
       color = source,
       linetype = type,
       group = name
-    ), ) +
+    ), linewidth = 1) +
     scale_color_manual("", values = color) +
     scale_linetype_manual("", values = linetype) +
     theme(
@@ -232,16 +220,19 @@ plot_hyperprec <- function(mod, info) {
       legend.box = "vertical",
       axis.title = element_blank(),
       axis.text.x = element_text(size = 18),
-      axis.text.y = element_text(
-        size = 18,
-        angle = 90,
-        hjust = .5
-      ),
+      axis.text.y = element_blank(),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_blank(),
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      panel.background = element_rect(fill = "white"),
-      panel.grid.major = element_line(colour = "grey")
+      legend.margin=margin(0,0,0,0),
+      legend.box.spacing = unit(0, "pt"),
+      legend.text.align = 0,
+      legend.key.width = unit(1, 'cm'),
+      panel.grid.major.x = element_line(color="grey", size = 0.2),
+      panel.background = element_rect(fill = "white")
     )
   return(p)
 }

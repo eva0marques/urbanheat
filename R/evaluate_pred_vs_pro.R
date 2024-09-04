@@ -43,7 +43,7 @@ evaluate_pred <- function(pred, pro, info) {
     info$r2_joint <- cor(pro$temp_sea,
                          pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint)**2
   } else {
-    break
+    stop("y_var not recognized.")
   }
 
   # rmse

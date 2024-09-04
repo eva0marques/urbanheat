@@ -1,5 +1,6 @@
 map_obs <- function(car, cws, ts, borders, y_var) {
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
+  print(class(borders))
   car_plot <- car[which(between(car$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   cws_plot <- cws[which(between(cws$time, ts, te)), ] |>
@@ -20,6 +21,8 @@ map_obs <- function(car, cws, ts, borders, y_var) {
   } else if (y_var == "temp") {
     tn <- floor(min(obs_plot$temp, na.rm = TRUE))
     tx <- ceiling(max(obs_plot$temp, na.rm = TRUE))
+  } else {
+    stop("y_var not recognized.")
   }
   pal <- load_palette("uhi")
   shape <- c("car" = 23, "cws" = 22)
@@ -74,7 +77,9 @@ map_obs <- function(car, cws, ts, borders, y_var) {
   return(p)
 }
 
-map_pred_mean <- function(pred, pro, borders, y_var) {
+map_pred_mean <- function(pred, pro, borders, y_var, model) {
+  stopifnot("model is not one of car, cws, joint" =
+              model %in% c("car", "cws", "joint"))
   ts <- unique(pred$time)
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   pred_plot <- pred |>
@@ -85,12 +90,16 @@ map_pred_mean <- function(pred, pro, borders, y_var) {
   } else if (y_var == "temp") {
     tn <- floor(min(c(pred$pred_mean_joint, pro$temp)))
     tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp)))
+  } else {
+    stop("y_var not recognized.")
   }
   pal <- load_palette("uhi")
   shape <- c("mustardijon" = 21)
   p <- ggplot() +
     geom_tile(
-      data = pred_plot, aes(x = lon, y = lat, fill = pred_mean_joint),
+      data = pred_plot, aes_string(x = "lon",
+                                   y = "lat",
+                                   fill = paste0("pred_mean_", model)),
       width = 0.0007, height = 0.0007
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
