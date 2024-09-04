@@ -7,7 +7,7 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
   # store model parameters info
   info <- list()
 
-  info$y_var <- "temp"
+  info$y_var <- "temp_sea"
   info$ts_str <- format(ts, "%Y%m%d%H")
   info$time <- strftime(ts, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
@@ -17,6 +17,45 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
   info$n_car <- nrow(car_samp)
   info$n_cws <- nrow(cws_samp)
   if (info$n_car != 0 && info$n_cws != 0) {
+    # altitude gradient correction
+    car_samp$grad_z <- apply(
+      car_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    car_samp$temp_sea <- apply(
+      car_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+
+    cws_samp$grad_z <- apply(
+      cws_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    cws_samp$temp_sea <- apply(
+      cws_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+
+    # covariates standardization
+    # -- extract mean and sd for the whole spatial domain (grid)
+    means <- apply(pred[, c("dem", "build_d", "build_h")], 2, mean)
+    stdevs <- apply(pred[, c("dem", "build_d", "build_h")], 2, sd)
+
+    # -- standardize car data
+    car_samp$dem <- (car_samp$dem - means[1]) / stdevs[1]
+    car_samp$build_d <- (car_samp$build_d - means[2]) / stdevs[2]
+    car_samp$build_h <- (car_samp$build_h - means[3]) / stdevs[3]
+
+    # -- standardize cws data
+    cws_samp$dem <- (cws_samp$dem - means[1]) / stdevs[1]
+    cws_samp$build_d <- (cws_samp$build_d - means[2]) / stdevs[2]
+    cws_samp$build_h <- (cws_samp$build_h - means[3]) / stdevs[3]
+
+    # -- standardize prediction data
+    pred$dem <- (pred$dem - means[1]) / stdevs[1]
+    pred$build_d <- (pred$build_d - means[2]) / stdevs[2]
+    pred$build_h <- (pred$build_h - means[3]) / stdevs[3]
+
     # -- mesh is adapted to data location
     mesh_car <- INLA::inla.mesh.2d(
       loc = cbind(car_samp$lon, car_samp$lat),
@@ -316,12 +355,11 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     cat(info$ts_str, "mod_car done\n")
     summary(mod_car)
 
-    f_cws <- y ~ 1 + int + dem + build_d + build_h + f(s, model = spde_cws)
+    f_cws <- y ~ 1 + int_cws + dem + build_d + build_h + f(s, model = spde_cws)
     mod_cws <- inla(
       formula = f_cws,
       data = INLA::inla.stack.data(stk_full_cws),
       family = "gaussian",
-      #control.fixed = control_fixed,
       control.fixed = list(
         mean.intercept = info$mu_0,
         prec.intercept = info$prec_beta,

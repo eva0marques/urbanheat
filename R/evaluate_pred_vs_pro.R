@@ -9,17 +9,42 @@ evaluate_pred <- function(pred, pro, info) {
   nn_idx <- sf::st_nearest_feature(pro, pred)
 
   # residuals for each pro station
-  pro$res_joint <- pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint - pro$temp
-  pro$res_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car - pro$temp
-  pro$res_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws - pro$temp
-
-  # r2 score
-  info$r2_car <- cor(pro$temp, pred[nn_idx,
-                                    c("pred_mean_car")]$pred_mean_car)**2
-  info$r2_cws <- cor(pro$temp, pred[nn_idx,
-                                    c("pred_mean_cws")]$pred_mean_cws)**2
-  info$r2_joint <- cor(pro$temp, pred[nn_idx,
-                                      c("pred_mean_joint")]$pred_mean_joint)**2
+  if (info$y_var == "temp") {
+    pro$res_joint <- pred[nn_idx,
+                          c("pred_mean_joint")]$pred_mean_joint - pro$temp
+    pro$res_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car - pro$temp
+    pro$res_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws - pro$temp
+    # r2 score
+    info$r2_car <- cor(pro$temp,
+                       pred[nn_idx, c("pred_mean_car")]$pred_mean_car)**2
+    info$r2_cws <- cor(pro$temp,
+                       pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws)**2
+    info$r2_joint <- cor(pro$temp,
+                         pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint)**2
+  } else if (info$y_var == "temp_sea") {
+    # compute altitude gradient correction for pro$temp
+    pro$grad_z <- apply(
+      pro[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    pro$temp_sea <- apply(
+      pro[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+    pro$res_joint <- pred[nn_idx,
+                          c("pred_mean_joint")]$pred_mean_joint - pro$temp_sea
+    pro$res_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car - pro$temp_sea
+    pro$res_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws - pro$temp_sea
+    # r2 score
+    info$r2_car <- cor(pro$temp_sea,
+                       pred[nn_idx, c("pred_mean_car")]$pred_mean_car)**2
+    info$r2_cws <- cor(pro$temp_sea,
+                       pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws)**2
+    info$r2_joint <- cor(pro$temp_sea,
+                         pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint)**2
+  } else {
+    break
+  }
 
   # rmse
   info$rmse_car <- sqrt(sum((pro$res_car)**2, na.rm = TRUE) /

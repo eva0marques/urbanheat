@@ -1,18 +1,35 @@
-map_obs <- function(car, cws, ts, borders) {
+map_obs <- function(car, cws, ts, borders, y_var) {
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   car_plot <- car[which(between(car$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   cws_plot <- cws[which(between(cws$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   obs_plot <- rbind(car_plot, cws_plot)
-  tn <- floor(min(obs_plot$temp, na.rm = TRUE))
-  tx <- ceiling(max(obs_plot$temp, na.rm = TRUE))
+  if (y_var == "temp_sea") {
+    # compute altitude gradient correction for pro$temp
+    obs_plot$grad_z <- apply(
+      obs_plot[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    obs_plot$temp_sea <- apply(
+      obs_plot[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+    tn <- floor(min(obs_plot$temp_sea, na.rm = TRUE))
+    tx <- ceiling(max(obs_plot$temp_sea, na.rm = TRUE))
+  } else if (y_var == "temp") {
+    tn <- floor(min(obs_plot$temp, na.rm = TRUE))
+    tx <- ceiling(max(obs_plot$temp, na.rm = TRUE))
+  }
   pal <- load_palette("uhi")
   shape <- c("car" = 23, "cws" = 22)
   p <- ggplot() +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = obs_plot, aes(x = lon, y = lat, fill = temp, shape = network),
+      data = obs_plot, aes_string(x = "lon",
+                                  y = "lat",
+                                  fill = y_var,
+                                  shape = "network"),
       size = 3
     ) +
     coord_sf(crs = 4326) +
@@ -57,13 +74,18 @@ map_obs <- function(car, cws, ts, borders) {
   return(p)
 }
 
-map_pred_mean <- function(pred, pro, borders) {
+map_pred_mean <- function(pred, pro, borders, y_var) {
   ts <- unique(pred$time)
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   pred_plot <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
-  tn <- floor(min(c(pred$pred_mean_joint, pro$temp)))
-  tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp)))
+  if (y_var == "temp_sea") {
+    tn <- floor(min(c(pred$pred_mean_joint, pro$temp_sea)))
+    tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp_sea)))
+  } else if (y_var == "temp") {
+    tn <- floor(min(c(pred$pred_mean_joint, pro$temp)))
+    tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp)))
+  }
   pal <- load_palette("uhi")
   shape <- c("mustardijon" = 21)
   p <- ggplot() +
@@ -73,7 +95,10 @@ map_pred_mean <- function(pred, pro, borders) {
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = pro, aes(x = lon, y = lat, fill = temp, shape = network),
+      data = pro, aes_string(x = "lon",
+                             y = "lat",
+                             fill = y_var,
+                             shape = "network"),
       size = 3
     ) +
     coord_sf(crs = 4326) +
