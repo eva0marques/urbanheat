@@ -1,4 +1,4 @@
-evaluate_pred <- function(pred, pro, info) {
+evaluate_pred <- function(pred, pro, info, borders) {
   ts <- unique(pred$time)
   stopifnot("not the same timestamp" = ts == as.POSIXct(info$time, tz = "UTC"))
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
@@ -6,21 +6,29 @@ evaluate_pred <- function(pred, pro, info) {
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   pred <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
+
+  # keep only pro stations within borders area
+  sf::sf_use_s2(FALSE)
+  borders_block <- sf::st_combine(borders)
+  keep <- sf::st_intersects(borders_block, pro)[[1]]
+  pro <- pro[keep, ]
+
   nn_idx <- sf::st_nearest_feature(pro, pred)
+
+  # prediction mean (= mode = median)
+  pro$pred_mean_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car
+  pro$pred_mean_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws
+  pro$pred_mean_joint <- pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint
 
   # residuals for each pro station
   if (info$y_var == "temp") {
-    pro$res_joint <- pred[nn_idx,
-                          c("pred_mean_joint")]$pred_mean_joint - pro$temp
-    pro$res_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car - pro$temp
-    pro$res_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws - pro$temp
-    # r2 score
-    info$r2_car <- cor(pro$temp,
-                       pred[nn_idx, c("pred_mean_car")]$pred_mean_car)**2
-    info$r2_cws <- cor(pro$temp,
-                       pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws)**2
-    info$r2_joint <- cor(pro$temp,
-                         pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint)**2
+    pro$res_joint <- pro$pred_mean_joint - pro$temp
+    pro$res_car <- pro$pred_mean_car - pro$temp
+    pro$res_cws <- pro$pred_mean_cws - pro$temp
+    # rsq score
+    info$rsq_car <- cor(pro$temp, pro$pred_mean_car)**2
+    info$rsq_cws <- cor(pro$temp, pro$pred_mean_cws)**2
+    info$rsq_joint <- cor(pro$temp, pro$pred_mean_joint)**2
   } else if (info$y_var == "temp_sea") {
     # compute altitude gradient correction for pro$temp
     pro$grad_z <- apply(
@@ -31,17 +39,15 @@ evaluate_pred <- function(pred, pro, info) {
       pro[, c("dem", "temp")], 1,
       function(y) grad_alt(y["dem"], y["temp"])$temp_sea
     )
-    pro$res_joint <- pred[nn_idx,
-                          c("pred_mean_joint")]$pred_mean_joint - pro$temp_sea
-    pro$res_car <- pred[nn_idx, c("pred_mean_car")]$pred_mean_car - pro$temp_sea
-    pro$res_cws <- pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws - pro$temp_sea
-    # r2 score
-    info$r2_car <- cor(pro$temp_sea,
-                       pred[nn_idx, c("pred_mean_car")]$pred_mean_car)**2
-    info$r2_cws <- cor(pro$temp_sea,
-                       pred[nn_idx, c("pred_mean_cws")]$pred_mean_cws)**2
-    info$r2_joint <- cor(pro$temp_sea,
-                         pred[nn_idx, c("pred_mean_joint")]$pred_mean_joint)**2
+    # residuals
+    pro$res_joint <- pro$pred_mean_joint - pro$temp_sea
+    pro$res_car <- pro$pred_mean_car - pro$temp_sea
+    pro$res_cws <- pro$pred_mean_cws - pro$temp_sea
+
+    # rsq score
+    info$rsq_car <- cor(pro$temp_sea, pro$pred_mean_car)**2
+    info$rsq_cws <- cor(pro$temp_sea, pro$pred_mean_cws)**2
+    info$rsq_joint <- cor(pro$temp_sea, pro$pred_mean_joint)**2
   } else {
     stop("y_var not recognized.")
   }
@@ -64,5 +70,5 @@ evaluate_pred <- function(pred, pro, info) {
   info$med_res_cws <- median(pro$res_cws, na.rm = TRUE)
   info$med_res_joint <- median(pro$res_joint , na.rm = TRUE)
 
-  return(list("pro" = pro, "info" = info))
+  return(list("pro" = pro, "scores" = info))
 }

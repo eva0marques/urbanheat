@@ -1,11 +1,16 @@
 map_obs <- function(car, cws, ts, borders, y_var) {
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
-  print(class(borders))
   car_plot <- car[which(between(car$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   cws_plot <- cws[which(between(cws$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   obs_plot <- rbind(car_plot, cws_plot)
+
+  # sf::sf_use_s2(FALSE)
+  # borders_block <- sf::st_combine(borders)
+  # keep <- sf::st_intersects(borders_block, obs_plot)[[1]]
+  # obs_plot <- obs_plot[keep, ]
+
   if (y_var == "temp_sea") {
     # compute altitude gradient correction for pro$temp
     obs_plot$grad_z <- apply(
@@ -18,9 +23,12 @@ map_obs <- function(car, cws, ts, borders, y_var) {
     )
     tn <- floor(min(obs_plot$temp_sea, na.rm = TRUE))
     tx <- ceiling(max(obs_plot$temp_sea, na.rm = TRUE))
+    obs_plot <- obs_plot[which(!(is.na(obs_plot$temp_sea))), ]
+
   } else if (y_var == "temp") {
     tn <- floor(min(obs_plot$temp, na.rm = TRUE))
     tx <- ceiling(max(obs_plot$temp, na.rm = TRUE))
+    obs_plot <- obs_plot[which(!is.na(obs_plot$temp)), ]
   } else {
     stop("y_var not recognized.")
   }
@@ -29,18 +37,18 @@ map_obs <- function(car, cws, ts, borders, y_var) {
   p <- ggplot() +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = obs_plot, aes_string(x = "lon",
-                                  y = "lat",
-                                  fill = y_var,
-                                  shape = "network"),
+      data = obs_plot, aes(x = lon,
+                           y = lat,
+                           fill = .data[[y_var]],
+                           shape = network),
       size = 3
     ) +
     coord_sf(crs = 4326) +
     scale_fill_gradientn(
-      colours = pal,
-      na.value = NA,
-      breaks = seq(tn, tx, 2),
-      limits = c(tn, tx)
+     colours = pal,
+     na.value = NA,
+     breaks = seq(tn, tx, 2),
+     limits = c(tn, tx)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
@@ -78,6 +86,7 @@ map_obs <- function(car, cws, ts, borders, y_var) {
 }
 
 map_pred_mean <- function(pred, pro, borders, y_var, model) {
+  pred_mean_model <- paste0("pred_mean_", model)
   stopifnot("model is not one of car, cws, joint" =
               model %in% c("car", "cws", "joint"))
   ts <- unique(pred$time)
@@ -85,11 +94,11 @@ map_pred_mean <- function(pred, pro, borders, y_var, model) {
   pred_plot <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   if (y_var == "temp_sea") {
-    tn <- floor(min(c(pred$pred_mean_joint, pro$temp_sea)))
-    tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp_sea)))
+    tn <- floor(min(c(pred[, pred_mean_model], pro$temp_sea)))
+    tx <- ceiling(max(c(pred[, pred_mean_model], pro$temp_sea)))
   } else if (y_var == "temp") {
-    tn <- floor(min(c(pred$pred_mean_joint, pro$temp)))
-    tx <- ceiling(max(c(pred$pred_mean_joint, pro$temp)))
+    tn <- floor(min(c(pred[, pred_mean_model], pro$temp)))
+    tx <- ceiling(max(c(pred[, pred_mean_model], pro$temp)))
   } else {
     stop("y_var not recognized.")
   }
@@ -97,17 +106,17 @@ map_pred_mean <- function(pred, pro, borders, y_var, model) {
   shape <- c("mustardijon" = 21)
   p <- ggplot() +
     geom_tile(
-      data = pred_plot, aes_string(x = "lon",
-                                   y = "lat",
-                                   fill = paste0("pred_mean_", model)),
+      data = pred_plot, aes(x = lon,
+                            y = lat,
+                            fill = .data[[pred_mean_model]]),
       width = 0.0007, height = 0.0007
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = pro, aes_string(x = "lon",
-                             y = "lat",
-                             fill = y_var,
-                             shape = "network"),
+      data = pro, aes(x = lon,
+                      y = lat,
+                      fill = .data[[y_var]],
+                      shape = network),
       size = 3
     ) +
     coord_sf(crs = 4326) +
@@ -153,18 +162,21 @@ map_pred_mean <- function(pred, pro, borders, y_var, model) {
 }
 
 
-map_pred_sd <- function(pred, borders) {
+map_pred_sd <- function(pred, borders, model) {
+  pred_sd_model <- paste0("pred_sd_", model)
   ts <- unique(pred$time)
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   pred_plot <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
-  sdn <- floor(min(pred$pred_sd_joint) * 10) / 10
-  sdx <- ceiling(max(pred$pred_sd_joint) * 10) / 10
+  sdn <- floor(min(pred[, pred_sd_model]) * 10) / 10
+  sdx <- ceiling(max(pred[, pred_sd_model]) * 10) / 10
   pal <- load_palette("reds")
 
   p <- ggplot() +
     geom_tile(
-      data = pred_plot, aes(x = lon, y = lat, fill = pred_sd_joint),
+      data = pred_plot, aes(x = lon,
+                            y = lat,
+                            fill = .data[[pred_sd_model]]),
       width = 0.0007, height = 0.0007
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
@@ -207,6 +219,7 @@ map_pred_sd <- function(pred, borders) {
     )
   return(p)
 }
+
 
 
 

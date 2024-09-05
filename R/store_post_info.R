@@ -1,4 +1,4 @@
-add_post_to_info <- function(mod, info) {
+store_post_info <- function(mod, info) {
   stopifnot("info has more than 1 row" = nrow(info) == 1)
 
   # fixed effects
