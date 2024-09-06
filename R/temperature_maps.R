@@ -1,8 +1,8 @@
-map_obs <- function(car, cws, ts, borders, y_var) {
+map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
-  car_plot <- car[which(between(car$time, ts, te)), ] |>
+  car_plot <- car[which(dplyr::between(car$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
-  cws_plot <- cws[which(between(cws$time, ts, te)), ] |>
+  cws_plot <- cws[which(dplyr::between(cws$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   obs_plot <- rbind(car_plot, cws_plot)
 
@@ -85,7 +85,11 @@ map_obs <- function(car, cws, ts, borders, y_var) {
   return(p)
 }
 
-map_pred_mean <- function(pred, pro, borders, y_var, model) {
+map_pred_mean <- function(pred,
+                          pro,
+                          borders,
+                          y_var = "temp_sea",
+                          model = "joint") {
   pred_mean_model <- paste0("pred_mean_", model)
   stopifnot("model is not one of car, cws, joint" =
               model %in% c("car", "cws", "joint"))
@@ -162,7 +166,7 @@ map_pred_mean <- function(pred, pro, borders, y_var, model) {
 }
 
 
-map_pred_sd <- function(pred, borders, model) {
+map_pred_sd <- function(pred, borders, model = "joint") {
   pred_sd_model <- paste0("pred_sd_", model)
   ts <- unique(pred$time)
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
@@ -219,7 +223,4 @@ map_pred_sd <- function(pred, borders, model) {
     )
   return(p)
 }
-
-
-
 

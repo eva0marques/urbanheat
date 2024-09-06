@@ -2,7 +2,7 @@ evaluate_pred <- function(pred, pro, info, borders) {
   ts <- unique(pred$time)
   stopifnot("not the same timestamp" = ts == as.POSIXct(info$time, tz = "UTC"))
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
-  pro <- pro[which(between(pro$time, ts, te)), ] |>
+  pro <- pro[which(dplyr::between(pro$time, ts, te)), ] |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   pred <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)

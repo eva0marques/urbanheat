@@ -6,10 +6,10 @@ store_post_info <- function(mod, info) {
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(names(list_marg), times = sapply(list_marg, nrow))
   marg_m <- unlist(lapply(X = list_marg,
-                          FUN = inla.emarginal, # computes the expectation
+                          FUN = INLA::inla.emarginal, # computes the expectation
                           fun = function(x) x))
   marg_mm <- unlist(lapply(X = list_marg,
-                           FUN = inla.emarginal,
+                           FUN = INLA::inla.emarginal,
                            fun = function(x) x^2))
   # -- var[X] = E[X^2] − E[X]^2 = mm - m^2
   marg_sd <- sqrt(marg_mm - marg_m^2)
@@ -25,10 +25,10 @@ store_post_info <- function(mod, info) {
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(names(list_marg), times = sapply(list_marg, nrow))
   marg_m <- unlist(lapply(X = list_marg,
-                          FUN = inla.emarginal, # computes the expectation
+                          FUN = INLA::inla.emarginal, # computes the expectation
                           fun = function(x) x))
   marg_mm <- unlist(lapply(X = list_marg,
-                           FUN = inla.emarginal,
+                           FUN = INLA::inla.emarginal,
                            fun = function(x) x^2))
   # -- var[X] = E[X^2] − E[X]^2 = mm - m^2
   marg_sd <- sqrt(marg_mm - marg_m^2)

@@ -1,20 +1,10 @@
-add_sw <- function(pro, rad) {
-  pro <- merge(pro, rad[, c("DATE", "GLO")], all.y = FALSE, by.x = "time", by.y = "DATE") |>
-    dplyr::rename(sw = GLO)
-  # change shortwave radiations in W.m-2
-  pro$sw <- pro$sw * 10000 / 3600
-  pro$day_night <- ifelse(pro$sw == 0, "night", "day")
-  return(pro)
-}
-
-
-summarize_pro_eval <- function(pro_eval, y_var = "temp_sea") {
-  pro_eval$y_var <- as.data.frame(pro_eval)[, y_var]
-  pro_eval$site_id <- interaction(sprintf("%.6f", pro_eval$lon),
-    sprintf("%.6f", pro_eval$lat),
+summarize_pro_scores <- function(pro_scores, y_var = "temp_sea") {
+  pro_scores$y_var <- as.data.frame(pro_scores)[, y_var]
+  pro_scores$site_id <- interaction(sprintf("%.6f", pro_scores$lon),
+    sprintf("%.6f", pro_scores$lat),
     sep = "_"
   )
-  pro_smry_loc <- pro_eval |>
+  pro_smry_loc <- pro_scores |>
     as.data.frame() |>
     dplyr::group_by(site_id) |>
     dplyr::summarise(
@@ -52,7 +42,7 @@ summarize_pro_eval <- function(pro_eval, y_var = "temp_sea") {
     data.frame() |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
 
-  pro_smry_hour <- pro_eval |>
+  pro_smry_hour <- pro_scores |>
     as.data.frame() |>
     dplyr::group_by(time) |>
     dplyr::summarise(
@@ -100,11 +90,11 @@ summarize_pro_eval <- function(pro_eval, y_var = "temp_sea") {
 
 
 # Spatial residual analysis
-map_median_res <- function(pro_eval,
+map_median_res <- function(pro_scores,
                            borders,
                            y_var = "temp_sea",
                            model = "joint") {
-  pro_smry_loc <- summarize_pro_eval(pro_eval, y_var)$pro_smry_loc
+  pro_smry_loc <- summarize_pro_scores(pro_scores, y_var)$pro_smry_loc
   res_median_model <- paste0("res_median_", model)
   pal <- load_palette("res")
 
@@ -120,14 +110,14 @@ map_median_res <- function(pro_eval,
     coord_sf(crs = 4326) +
     scale_fill_stepsn(
       colours = pal,
-      limits = c(-2, 2),
-      breaks = seq(-2, 2, .5),
-      labels = seq(-2, 2, .5)
+      limits = c(-1.8, 1.8),
+      breaks = seq(-1.8, 1.8, .4),
+      labels = seq(-1.8, 1.8, .4)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
-    labs(fill = latex2exp::TeX("$median(T_{pred} - T_{ref})$")) +
-    guides(fill = guide_colourbar(barwidth = 1.5, barheight = 20)) +
+    labs(fill = latex2exp::TeX("$(T_{pred} - T_{ref})_{q0.5}$")) +
+    guides(fill = guide_colourbar(barwidth = 40, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),
@@ -139,8 +129,8 @@ map_median_res <- function(pro_eval,
       pad_x = unit(0.5, "cm"), pad_y = unit(0.5, "cm")
     ) +
     theme(
-      legend.position = "right",
-      legend.direction = "vertical",
+      legend.position = "top",
+      legend.direction = "horizontal",
       axis.title = element_blank(),
       axis.text.x = element_text(size = 18),
       axis.text.y = element_text(
@@ -157,10 +147,43 @@ map_median_res <- function(pro_eval,
   return(p)
 }
 
+map_median_res_d_vs_n <- function(pro_scores, borders) {
+  all <- map_median_res(pro_scores, borders = borders) +
+    annotate("text",
+             x = 4.925,
+             y = 47.38,
+             label = expression(bold("ALL")),
+             size = 6)
+  night <- map_median_res(pro_scores[which(pro_scores$day_night == "night"), ],
+                        borders = borders) +
+    annotate("text",
+             x = 4.925,
+             y = 47.38,
+             label = expression(bold("NIGHT")),
+             size = 6)
+  day <- map_median_res(pro_scores[which(pro_scores$day_night == "day"), ],
+                          borders = borders) +
+    annotate("text",
+             x = 4.925,
+             y = 47.38,
+             label = expression(bold("DAY")),
+             size = 6)
+  p <- ggpubr::ggarrange(all,
+                         NULL,
+                         ggpubr::ggarrange(day, night, ncol = 2, legend = "none"),
+                         NULL,
+                         nrow = 4,
+                         heights = c(1, 0, 1, 0),
+                         common.legend = TRUE,
+                         legend = "top"
+                         )
+  return(p)
+}
 
-plot_res_vs_ref <- function(pro_eval, y_var, model) {
+
+plot_res_vs_ref <- function(pro_scores, y_var, model) {
   res_model <- paste0("res_", model)
-  ggplot(data = pro_eval,
+  ggplot(data = pro_scores,
          aes(y = .data[[res_model]],
              x = .data[[y_var]])) +
     geom_point() +
@@ -196,13 +219,13 @@ plot_res_vs_ref <- function(pro_eval, y_var, model) {
 }
 
 
-plot_predmean_vs_ref <- function(pro_eval, y_var, model) {
+plot_predmean_vs_ref <- function(pro_scores, y_var, model) {
   pred_model <- paste0("pred_mean_", model)
-  tn <- floor(min(c(as.data.frame(pro_eval)[, pred_model],
-                    as.data.frame(pro_eval)[, y_var])))
-  tx <- ceiling(max(c(as.data.frame(pro_eval)[, pred_model],
-                      as.data.frame(pro_eval)[, y_var])))
-  ggplot(data = pro_eval,
+  tn <- floor(min(c(as.data.frame(pro_scores)[, pred_model],
+                    as.data.frame(pro_scores)[, y_var])))
+  tx <- ceiling(max(c(as.data.frame(pro_scores)[, pred_model],
+                      as.data.frame(pro_scores)[, y_var])))
+  ggplot(data = pro_scores,
          aes(y = .data[[pred_model]],
              x = .data[[y_var]])) +
     geom_point() +
