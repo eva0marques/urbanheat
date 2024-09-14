@@ -279,7 +279,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     info$mu_cws <- ifelse(sw == 0, 1, 0.5) # 1 or 1.5 during the night?
     info$mu_covar <- 0
     # -- precision of beta coefficients
-    info$prec_beta <- 10
+    info$prec_beta_int <- 2
+    info$prec_beta_obs <- 10
     info$prec_covar <- 0.001 # small value for uninformative
     # data variance prior
     info$s2_car_prior <- 0.8
@@ -291,9 +292,9 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
                   int_car = info$mu_car,
                   int_cws = info$mu_cws,
                   default = info$mu_covar),
-      prec = list(int = info$prec_beta,
-                  int_car = info$prec_beta,
-                  int_cws = info$prec_beta,
+      prec = list(int = info$prec_beta_int,
+                  int_car = info$prec_beta_obs,
+                  int_cws = info$prec_beta_obs,
                   default = info$prec_covar))
 
     est_loggamma_param <- function(a, b) {
@@ -313,8 +314,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     info$a2_cws <- prec_param_cws$a2
     info$b2_cws <- prec_param_cws$b2
 
-    # prior on likelihood
-    control_family <- list(
+    # loggamma hyperprec prior
+    control_family_loggamma <- list(
       list(
         hyper = list(
           prec = list(
@@ -333,20 +334,61 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       )
     )
 
+    # gaussian hyperprec prior
+    #info$s2_cws_prior_prec <- 4
+    #info$s2_car_prior_prec <- 4
+    control_family_gaussian <- list(
+      list(
+        hyper = list(
+          prec = list(
+            prior = "gaussian",
+            param = c(info$s2_car_prior, info$s2_car_prior_prec) # mean and prec
+          )
+        )
+      ),
+      list(
+        hyper = list(
+          prec = list(
+            prior = "gaussian",
+            param = c(info$s2_cws_prior, info$s2_cws_prior_prec) # mean and prec
+          )
+        )
+      )
+    )
+
+    # fixed hyperprec
+    control_family_fixed <- list(
+      list(
+        hyper = list(
+          prec = list(
+            initial = info$s2_car_prior,
+            fixed = TRUE
+          )
+        )
+      ),
+      list(
+        hyper = list(
+          prec = list(
+            initial = info$s2_cws_prior,
+            fixed = TRUE
+          )
+        )
+      )
+    )
 
     f_car <- y ~ 1 + int_car + dem + build_d + build_h + f(s, model = spde_car)
     mod_car <- INLA::inla(
       formula = f_car,
       data = INLA::inla.stack.data(stk_full_car),
       family = "gaussian",
-      #control.fixed = control_fixed,
       control.fixed = list(
         mean.intercept = info$mu_0,
         prec.intercept = info$prec_beta,
         mean = list(int_car = info$mu_car, default = info$mu_covar),
         prec = list(int_car = info$prec_beta, default = info$prec_covar)
         ),
-      control.family = control_family[[1]],
+      control.family = control_family_gaussian[[1]],
+      #control.family = control_family_loggamma[[1]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
@@ -367,7 +409,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
         mean = list(int_cws = info$mu_cws, default = info$mu_covar),
         prec = list(int_cws = info$prec_beta, default = info$prec_covar)
       ),
-      control.family = control_family[[2]],
+      control.family = control_family_loggamma[[2]],
+      #control.family = control_family_gaussian[[2]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
@@ -384,6 +427,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       data = INLA::inla.stack.data(stk_full_joint),
       family = c("gaussian", "gaussian"),
       control.fixed = control_fixed,
+      control.family = control_family_loggamma,
+      #control.family = control_family_gaussian,
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,

@@ -181,12 +181,21 @@ map_median_res_d_vs_n <- function(pro_scores, borders) {
 }
 
 
-plot_res_vs_ref <- function(pro_scores, y_var, model) {
+plot_res_vs_ref <- function(pro_scores,
+                            y_var = "temp_sea",
+                            model = "joint") {
   res_model <- paste0("res_", model)
   ggplot(data = pro_scores,
          aes(y = .data[[res_model]],
              x = .data[[y_var]])) +
-    geom_point() +
+    stat_density2d(aes(fill = ..density..),
+                   alpha = 1,
+                   geom = "tile",
+                   contour = FALSE,
+                   n = 200) +
+    scale_fill_continuous(low = "white",
+                          high = load_palette("model")[model]) +
+    #geom_point() +
     geom_abline(aes(slope = 0, intercept = 0), color = "red") +
     geom_abline(aes(slope = 0, intercept = -1),
                 color = "black",
@@ -219,7 +228,9 @@ plot_res_vs_ref <- function(pro_scores, y_var, model) {
 }
 
 
-plot_predmean_vs_ref <- function(pro_scores, y_var, model) {
+plot_predmean_vs_ref <- function(pro_scores,
+                                 y_var = "temp_sea",
+                                 model = "joint") {
   pred_model <- paste0("pred_mean_", model)
   tn <- floor(min(c(as.data.frame(pro_scores)[, pred_model],
                     as.data.frame(pro_scores)[, y_var])))
@@ -228,7 +239,14 @@ plot_predmean_vs_ref <- function(pro_scores, y_var, model) {
   ggplot(data = pro_scores,
          aes(y = .data[[pred_model]],
              x = .data[[y_var]])) +
-    geom_point() +
+    #geom_point() +
+    stat_density2d(aes(fill = ..density..),
+                   alpha = 1,
+                   geom = "tile",
+                   contour = FALSE,
+                   n = 200) +
+    scale_fill_continuous(low = "white",
+                          high = load_palette("model")[model]) +
     geom_abline(aes(slope = 1, intercept = 0), color = "red") +
     geom_abline(aes(slope = 1, intercept = -1),
                 color = "black",
@@ -260,5 +278,39 @@ plot_predmean_vs_ref <- function(pro_scores, y_var, model) {
       panel.background = element_rect(fill = "white")
     ) +
     guides(linetype = guide_legend(nrow = 2))
+}
+
+
+boxplot_res_lcz <- function(pro_scores, model = "joint") {
+  res_model <- paste0("res_", model)
+  pal <- load_palette("lcz")
+  p <- ggplot(pro_scores) +
+    geom_boxplot(aes(y = .data[[res_model]], x = lcz_300m, fill = lcz_300m),
+                 outlier.size = 0.5,
+                 outlier.shape = 1
+    ) +
+    scale_fill_manual(values = pal$col,
+                      breaks = pal$class,
+                      labels = pal$meaning) +
+    facet_wrap(vars(ifelse(day_night == "day", "DAY", "NIGHT"))) +
+    coord_cartesian(ylim = c(-5, 5)) +
+    geom_hline(yintercept = 0, color = "red") +
+    ylab(latex2exp::TeX("$\\Delta_{ij}$ (°C)")) +
+    scale_y_continuous(breaks = seq(-5, 5, 1)) +
+    xlab("") +
+    labs(fill = "Local Climate Zone") +
+    theme(
+      axis.text.x = element_text(size = 18),
+      axis.text.y = element_text(size = 18),
+      axis.title.x = element_text(size = 18),
+      axis.title.y = element_text(size = 18),
+      plot.caption = element_text(size = 18),
+      legend.text = element_text(size = 18),
+      legend.title = element_text(size = 18),
+      strip.text = element_text(size = 20),
+      panel.grid.major = element_line(color="grey", size = 0.2),
+      panel.background = element_rect(fill = "white")
+    )
+  return(p)
 }
 

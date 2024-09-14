@@ -47,14 +47,14 @@ map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
     scale_fill_gradientn(
      colours = pal,
      na.value = NA,
-     breaks = seq(tn, tx, 2),
+     breaks = seq(tn, tx, 1),
      limits = c(tn, tx)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     scale_shape_manual("", values = shape) +
     labs(fill = "T (°C)") +
-    guides(fill = guide_colourbar(barwidth = 20, barheight = 1.5)) +
+    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),
@@ -127,14 +127,14 @@ map_pred_mean <- function(pred,
     scale_fill_gradientn(
       colours = pal,
       na.value = NA,
-      breaks = seq(tn, tx, 2),
+      breaks = seq(tn, tx, 1),
       limits = c(tn, tx)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     scale_shape_manual("", values = shape, labels = "MUSTARDijon network") +
     labs(fill = "T (°C)") +
-    guides(fill = guide_colourbar(barwidth = 20, barheight = 1.5)) +
+    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),
@@ -194,7 +194,7 @@ map_pred_sd <- function(pred, borders, model = "joint") {
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     labs(fill = latex2exp::TeX("$\\sigma$")) +
-    guides(fill = guide_colourbar(barwidth = 20, barheight = 1.5)) +
+    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),

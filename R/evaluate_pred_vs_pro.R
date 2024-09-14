@@ -72,3 +72,48 @@ evaluate_pred <- function(pred, pro, info, borders) {
 
   return(list("pro" = pro, "scores" = info))
 }
+
+
+overall_scores <- function(pro_scores, y_var = "temp_sea") {
+  if (y_var == "temp") {
+    rsq_car <- cor(pro_scores$temp, pro_scores$pred_mean_car)**2
+    rsq_cws <- cor(pro_scores$temp, pro_scores$pred_mean_cws)**2
+    rsq_joint <- cor(pro_scores$temp, pro_scores$pred_mean_joint)**2
+  } else if (y_var == "temp_sea") {
+    rsq_car <- cor(pro_scores$temp_sea, pro_scores$pred_mean_car)**2
+    rsq_cws <- cor(pro_scores$temp_sea, pro_scores$pred_mean_cws)**2
+    rsq_joint <- cor(pro_scores$temp_sea, pro_scores$pred_mean_joint)**2
+  }
+
+  rmse_car <- sqrt(sum((pro_scores$res_car)**2, na.rm = TRUE) /
+                     length(which(!is.na(pro_scores$res_car))))
+  rmse_cws <- sqrt(sum((pro_scores$res_cws)**2, na.rm = TRUE) /
+                     length(which(!is.na(pro_scores$res_cws))))
+  rmse_joint <- sqrt(sum((pro_scores$res_joint)**2, na.rm = TRUE) /
+                       length(which(!is.na(pro_scores$res_joint))))
+
+  # mae
+  mae_car <- mean(abs(pro_scores$res_car), na.rm = TRUE)
+  mae_cws <- mean(abs(pro_scores$res_cws), na.rm = TRUE)
+  mae_joint <- mean(abs(pro_scores$res_joint), na.rm = TRUE)
+
+  # median residuals
+  med_res_car <- median(pro_scores$res_car, na.rm = TRUE)
+  med_res_cws <- median(pro_scores$res_cws, na.rm = TRUE)
+  med_res_joint <- median(pro_scores$res_joint , na.rm = TRUE)
+
+  return(list(
+    "rsq_car" = rsq_car,
+    "rsq_cws" = rsq_cws,
+    "rsq_joint" = rsq_joint,
+    "rmse_car" = rmse_car,
+    "rmse_cws" = rmse_cws,
+    "rmse_joint" = rmse_joint,
+    "mae_car" = mae_car,
+    "mae_cws" = mae_cws,
+    "mae_joint" = mae_joint,
+    "med_res_car" = med_res_car,
+    "med_res_cws" = med_res_cws,
+    "med_res_joint" = med_res_joint
+  ))
+}

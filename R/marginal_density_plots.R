@@ -1,4 +1,4 @@
-density_obs_intercept <- function(info) {
+density_beta_obs <- function(info) {
   linetype <- c("simul" = "solid", "prior" = "dotted", "post" = "dashed")
   color <- c("car" = "#FF0800", "cws" = "#00BFFF")
   p <- ggplot(data = data.frame(x = c(-3, 3)), aes(x)) +
@@ -6,7 +6,7 @@ density_obs_intercept <- function(info) {
       fun = dnorm, n = 101,
       args = list(
         mean = info$mu_car,
-        sd = sqrt(1 / info$prec_beta)
+        sd = sqrt(1 / info$prec_beta_obs)
       ),
       aes(color = "car", linetype = "prior"),
       linewidth = 1
@@ -24,7 +24,7 @@ density_obs_intercept <- function(info) {
       fun = dnorm, n = 101,
       args = list(
         mean = info$mu_cws,
-        sd = sqrt(1 / info$prec_beta)
+        sd = sqrt(1 / info$prec_beta_obs)
       ),
       aes(color = "cws", linetype = "prior"),
       linewidth = 1

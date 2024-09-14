@@ -80,8 +80,8 @@ run_case_study <- function(r_path, in_path, out_path) {
   # run model on every hour of 2018/08 in Dijon (France)
 
   set.seed(12)
-  t_start <- as.POSIXct("2018-08-21 13:00:00", tz = "UTC")
-  t_end <- as.POSIXct("2018-08-29 09:00:00", tz = "UTC")
+  t_start <- as.POSIXct("2018-08-25 19:00:00", tz = "UTC")
+  t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
   period <- seq(t_start, t_end, by = "1 hour")
   for (p in period) {
     p_str <- strftime(p, format = "%Y-%m-%d %H:%M:%S", tz = "UTC") |>
