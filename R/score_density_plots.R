@@ -54,7 +54,7 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("DAY")),
       size = 6
     ) +
-    xlab(latex2exp::TeX("$\\Delta_j$ (°C)")) +
+    xlab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
     labs(
       color = "",
       caption = bquote(
@@ -104,7 +104,7 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("NIGHT")),
       size = 6
     ) +
-    xlab(latex2exp::TeX("$\\Delta_j$ (°C)")) +
+    xlab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
     labs(
       color = "",
       caption = bquote(

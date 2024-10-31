@@ -39,7 +39,8 @@ density_beta_obs <- function(info) {
       linewidth = 1
     ) +
     scale_color_manual("", values = color) +
-    scale_linetype_manual("", values = linetype) +
+    scale_linetype_manual(name = latex2exp::TeX("$\\mu_Y$"),
+                          values = linetype) +
     scale_x_continuous(breaks = seq(-3, 3, 1), limits = c(-3, 3)) +
     theme(
       legend.position = "bottom",
@@ -213,7 +214,8 @@ density_hyperprec <- function(mod, info) {
       group = name
     ), linewidth = 1) +
     scale_color_manual("", values = color) +
-    scale_linetype_manual("", values = linetype) +
+    scale_linetype_manual(name = latex2exp::TeX("$\\prec_Y$"),
+                          values = linetype) +
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",

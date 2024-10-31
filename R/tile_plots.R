@@ -48,7 +48,7 @@ mytile <- function(scores, fill) {
       breaks = seq(-3, 3, .5),
       limits = c(-3, 3),
       na.value = "grey") +
-    guides(fill = guide_colourbar(barwidth = 65, barheight = 1.5)) +
+    guides(fill = guide_colourbar(barwidth = 45, barheight = 1.5)) +
     theme(
       axis.text.x = element_text(size = 16),
       axis.text.y = element_text(size = 16),
@@ -170,7 +170,7 @@ tiles_int_obs_mean <- function(scores) {
     annotate("text",
              x = 12,
              y = as.Date(max(scores$time) - lubridate::days(1)),
-             label = latex2exp::TeX("$\\bar{p(\\epsilon_{car})}$"),
+             label = latex2exp::TeX("$\\bar{p(\\mu_{car})}$"),
              size = 9
     )
   p_cws_prior <- mytile(scores, "mu_cws") +
@@ -182,7 +182,7 @@ tiles_int_obs_mean <- function(scores) {
     annotate("text",
              x = 12,
              y = as.Date(max(scores$time) - lubridate::days(1)),
-             label = latex2exp::TeX("$\\bar{p(\\epsilon_{cws})}$"),
+             label = latex2exp::TeX("$\\bar{p(\\mu_{cws})}$"),
              size = 9
     )
   p_car <- mytile(scores, "int_car_mean") +
@@ -194,7 +194,7 @@ tiles_int_obs_mean <- function(scores) {
     annotate("text",
              x = 12,
              y = as.Date(max(scores$time) - lubridate::days(1)),
-             label = latex2exp::TeX("$\\bar{p(\\epsilon_{car}|Y)}$"),
+             label = latex2exp::TeX("$\\bar{p(\\mu_{car}|Y)}$"),
              size = 9
     )
   p_cws <- mytile(scores, "int_cws_mean") +
@@ -206,7 +206,7 @@ tiles_int_obs_mean <- function(scores) {
     annotate("text",
              x = 12,
              y = as.Date(max(scores$time) - lubridate::days(1)),
-             label = latex2exp::TeX("$\\bar{p(\\epsilon_{cws}|Y)}$"),
+             label = latex2exp::TeX("$\\bar{p(\\mu_{cws}|Y)}$"),
              size = 9
     )
   int_mean <- ggpubr::ggarrange(p_car_prior,

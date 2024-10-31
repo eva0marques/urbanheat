@@ -106,6 +106,14 @@ rad$DATE <- as.POSIXct(rad$DATE, tz = "UTC")
 ## Plot August 2018 scores for paper 
 
 ```{r}
+out_path <- "../output_loggamma_precintobs_sup_precint/"
+scores <- read.csv(paste0(out_path, "scores_201808_dijon.csv"))
+scores$time <- as.POSIXct(scores$time,
+                          format = "%Y-%m-%d %H:%M:%S",
+                          tz = "UTC")
+pro_scores <- read.csv(
+  paste0(out_path, "mustard_evaluation_201808_dijon.csv")
+  )
 scores[which(scores$rmse_joint == min(scores$rmse_joint)), ]
 scores[which(scores$rmse_joint <= quantile(scores$rmse_joint, .1)), ]
 scores[which(scores$n_car <= 100 & scores$rmse_joint <= .5), ]
@@ -155,5 +163,12 @@ Overall scores
 overall_scores(pro_scores)
 ```
 
+```{r}
+map_pred_mean <- function(pred,
+                          pro,
+                          borders,
+                          y_var = "temp_sea",
+                          model = "joint")
+```
 
 

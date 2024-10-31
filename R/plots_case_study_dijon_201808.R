@@ -8,6 +8,20 @@ plot_ts <- function(ts, out_path, car, cws, pred, rad, borders) {
       ".rds"
     )
   )
+  scores <- read.csv(paste0(out_path, "scores_201808_dijon.csv"))
+  scores$time <- as.POSIXct(scores$time,
+                            format = "%Y-%m-%d %H:%M:%S",
+                            tz = "UTC")
+  pro_scores <- read.csv(
+    paste0(out_path, "mustard_evaluation_201808_dijon.csv")
+  )
+  pro_scores$time <- pro_scores$time |>
+    sapply(FUN = function (x) {
+      ifelse(nchar(x) == 10, paste(x, "00:00:00"), x)
+    }) |>
+    as.POSIXct(format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  pro_scores <- add_sw(pro_scores, rad)
+  scores$day_night <- ifelse(scores$sw == 0, "night", "day")
   pro_scores_ts <- pro_scores[which(pro_scores$time == ts), ]
   scores_ts <- scores[which(scores$time == ts), ]
   sw <- rad[which(rad$DATE == ts), "GLO"]

@@ -295,7 +295,7 @@ boxplot_res_lcz <- function(pro_scores, model = "joint") {
     facet_wrap(vars(ifelse(day_night == "day", "DAY", "NIGHT"))) +
     coord_cartesian(ylim = c(-5, 5)) +
     geom_hline(yintercept = 0, color = "red") +
-    ylab(latex2exp::TeX("$\\Delta_{ij}$ (°C)")) +
+    ylab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
     scale_y_continuous(breaks = seq(-5, 5, 1)) +
     xlab("") +
     labs(fill = "Local Climate Zone") +

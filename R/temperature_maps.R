@@ -97,6 +97,8 @@ map_pred_mean <- function(pred,
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   pred_plot <- pred |>
     sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
+  pro <- pro |>
+    sf::st_as_sf(coords = c("lon", "lat"), remove = FALSE, crs = 4326)
   if (y_var == "temp_sea") {
     tn <- floor(min(c(pred[, pred_mean_model], pro$temp_sea)))
     tx <- ceiling(max(c(pred[, pred_mean_model], pro$temp_sea)))
@@ -134,7 +136,8 @@ map_pred_mean <- function(pred,
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     scale_shape_manual("", values = shape, labels = "MUSTARDijon network") +
     labs(fill = "T (°C)") +
-    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5)) +
+    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5, order = 1)
+    ) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),
@@ -187,9 +190,12 @@ map_pred_sd <- function(pred, borders, model = "joint") {
     coord_sf(crs = 4326) +
     scale_fill_stepsn(
       colours = pal,
-      limits = c(sdn, sdx),
-      breaks = seq(sdn, sdx, .1),
-      labels = seq(sdn, sdx, .1)
+      #limits = c(sdn, sdx),
+      #breaks = seq(0, sdx, .1),
+      #labels = seq(0, sdx, .1)
+      limits = c(0, 1.6),
+      breaks = seq(0, 1.6, .2),
+      labels = seq(0, 1.6, .2)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
