@@ -1,5 +1,5 @@
 density_beta_obs <- function(info) {
-  linetype <- c("simul" = "solid", "prior" = "dotted", "post" = "dashed")
+  linetype <- c("simul" = "dashed", "prior" = "dashed", "post" = "solid")
   color <- c("car" = "#FF0800", "cws" = "#00BFFF")
   p <- ggplot(data = data.frame(x = c(-3, 3)), aes(x)) +
     stat_function(
@@ -39,8 +39,10 @@ density_beta_obs <- function(info) {
       linewidth = 1
     ) +
     scale_color_manual("", values = color) +
-    scale_linetype_manual(name = latex2exp::TeX("$\\mu_Y$"),
-                          values = linetype) +
+    scale_linetype_manual(
+      name = latex2exp::TeX("$\\mu_Y$"),
+      values = linetype
+    ) +
     scale_x_continuous(breaks = seq(-3, 3, 1), limits = c(-3, 3)) +
     theme(
       legend.position = "bottom",
@@ -55,11 +57,11 @@ density_beta_obs <- function(info) {
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      legend.margin=margin(0,0,0,0),
+      legend.margin = margin(0, 0, 0, 0),
       legend.box.spacing = unit(0, "pt"),
       legend.text.align = 0,
-      legend.key.width = unit(1, 'cm'),
-      panel.grid.major.x = element_line(color="grey", size = 0.2),
+      legend.key.width = unit(1, "cm"),
+      panel.grid.major.x = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     )
   return(p)
@@ -132,11 +134,11 @@ density_beta_covar <- function(info) {
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      legend.margin=margin(0,0,0,0),
+      legend.margin = margin(0, 0, 0, 0),
       legend.box.spacing = unit(0, "pt"),
       legend.text.align = 0,
-      legend.key.width = unit(1, 'cm'),
-      panel.grid.major.x = element_line(color="grey", size = 0.2),
+      legend.key.width = unit(1, "cm"),
+      panel.grid.major.x = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     ) +
     guides(linetype = guide_legend(nrow = 2), color = guide_legend(nrow = 3))
@@ -203,7 +205,7 @@ density_hyperprec <- function(mod, info) {
   )
   prec_marginals <- rbind(prec_marginals, prec_car_prior, prec_cws_prior)
   # plot
-  linetype <- c("simul" = "solid", "prior" = "dotted", "post" = "dashed")
+  linetype <- c("simul" = "dashed", "prior" = "dashed", "post" = "solid")
   color <- c("car" = "#FF0800", "cws" = "#00BFFF")
   p <- ggplot(prec_marginals) +
     geom_line(aes(
@@ -214,8 +216,10 @@ density_hyperprec <- function(mod, info) {
       group = name
     ), linewidth = 1) +
     scale_color_manual("", values = color) +
-    scale_linetype_manual(name = latex2exp::TeX("$\\prec_Y$"),
-                          values = linetype) +
+    scale_linetype_manual(
+      name = latex2exp::TeX("$\\prec_Y$"),
+      values = linetype
+    ) +
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
@@ -229,11 +233,11 @@ density_hyperprec <- function(mod, info) {
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      legend.margin=margin(0,0,0,0),
+      legend.margin = margin(0, 0, 0, 0),
       legend.box.spacing = unit(0, "pt"),
       legend.text.align = 0,
-      legend.key.width = unit(1, 'cm'),
-      panel.grid.major.x = element_line(color="grey", size = 0.2),
+      legend.key.width = unit(1, "cm"),
+      panel.grid.major.x = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     )
   return(p)

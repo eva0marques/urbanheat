@@ -24,7 +24,6 @@ map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
     tn <- floor(min(obs_plot$temp_sea, na.rm = TRUE))
     tx <- ceiling(max(obs_plot$temp_sea, na.rm = TRUE))
     obs_plot <- obs_plot[which(!(is.na(obs_plot$temp_sea))), ]
-
   } else if (y_var == "temp") {
     tn <- floor(min(obs_plot$temp, na.rm = TRUE))
     tx <- ceiling(max(obs_plot$temp, na.rm = TRUE))
@@ -37,23 +36,25 @@ map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
   p <- ggplot() +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = obs_plot, aes(x = lon,
-                           y = lat,
-                           fill = .data[[y_var]],
-                           shape = network),
+      data = obs_plot, aes(
+        x = lon,
+        y = lat,
+        fill = .data[[y_var]],
+        shape = network
+      ),
       size = 3
     ) +
     coord_sf(crs = 4326) +
     scale_fill_gradientn(
-     colours = pal,
-     na.value = NA,
-     breaks = seq(tn, tx, 1),
-     limits = c(tn, tx)
+      colours = pal,
+      na.value = NA,
+      breaks = seq(tn, tx, 1),
+      limits = c(tn, tx)
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     scale_shape_manual("", values = shape) +
-    labs(fill = "T (°C)") +
+    labs(fill = "T2M (°C)") +
     guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
@@ -91,8 +92,10 @@ map_pred_mean <- function(pred,
                           y_var = "temp_sea",
                           model = "joint") {
   pred_mean_model <- paste0("pred_mean_", model)
-  stopifnot("model is not one of car, cws, joint" =
-              model %in% c("car", "cws", "joint"))
+  stopifnot(
+    "model is not one of car, cws, joint" =
+      model %in% c("car", "cws", "joint")
+  )
   ts <- unique(pred$time)
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
   pred_plot <- pred |>
@@ -112,18 +115,23 @@ map_pred_mean <- function(pred,
   shape <- c("mustardijon" = 21)
   p <- ggplot() +
     geom_tile(
-      data = pred_plot, aes(x = lon,
-                            y = lat,
-                            fill = .data[[pred_mean_model]]),
+      data = pred_plot, aes(
+        x = lon,
+        y = lat,
+        fill = .data[[pred_mean_model]]
+      ),
       width = 0.0007, height = 0.0007
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = pro, aes(x = lon,
-                      y = lat,
-                      fill = .data[[y_var]],
-                      shape = network),
-      size = 3
+      data = pro, aes(
+        x = lon,
+        y = lat,
+        fill = .data[[y_var]],
+        shape = network,
+      ),
+      stroke = 1,
+      size = 4
     ) +
     coord_sf(crs = 4326) +
     scale_fill_gradientn(
@@ -135,9 +143,8 @@ map_pred_mean <- function(pred,
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     scale_shape_manual("", values = shape, labels = "MUSTARDijon network") +
-    labs(fill = "T (°C)") +
-    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5, order = 1)
-    ) +
+    labs(fill = "T2M (°C)") +
+    guides(fill = guide_colourbar(barwidth = 23, barheight = 1.5, order = 1)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
       pad_x = unit(0.5, "cm"),
@@ -181,18 +188,20 @@ map_pred_sd <- function(pred, borders, model = "joint") {
 
   p <- ggplot() +
     geom_tile(
-      data = pred_plot, aes(x = lon,
-                            y = lat,
-                            fill = .data[[pred_sd_model]]),
+      data = pred_plot, aes(
+        x = lon,
+        y = lat,
+        fill = .data[[pred_sd_model]]
+      ),
       width = 0.0007, height = 0.0007
     ) +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     coord_sf(crs = 4326) +
     scale_fill_stepsn(
       colours = pal,
-      #limits = c(sdn, sdx),
-      #breaks = seq(0, sdx, .1),
-      #labels = seq(0, sdx, .1)
+      # limits = c(sdn, sdx),
+      # breaks = seq(0, sdx, .1),
+      # labels = seq(0, sdx, .1)
       limits = c(0, 1.6),
       breaks = seq(0, 1.6, .2),
       labels = seq(0, 1.6, .2)
@@ -229,4 +238,3 @@ map_pred_sd <- function(pred, borders, model = "joint") {
     )
   return(p)
 }
-

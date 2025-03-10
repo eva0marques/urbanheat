@@ -84,11 +84,6 @@ summarize_pro_scores <- function(pro_scores, y_var = "temp_sea") {
   )
 }
 
-# Temporal residual analysis
-
-
-
-
 # Spatial residual analysis
 map_median_res <- function(pro_scores,
                            borders,
@@ -101,9 +96,11 @@ map_median_res <- function(pro_scores,
   p <- ggplot() +
     geom_sf(data = borders, fill = NA, size = 0.05) +
     geom_point(
-      data = pro_smry_loc, aes(x = lon,
-                               y = lat,
-                               fill = .data[[res_median_model]]),
+      data = pro_smry_loc, aes(
+        x = lon,
+        y = lat,
+        fill = .data[[res_median_model]]
+      ),
       shape = 21,
       size = 3
     ) +
@@ -116,7 +113,7 @@ map_median_res <- function(pro_scores,
     ) +
     scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
-    labs(fill = latex2exp::TeX("$(T_{pred} - T_{ref})_{q0.5}$")) +
+    labs(fill = latex2exp::TeX("$(T2M_{pred} - T2M_{ref})_{q0.5}$")) +
     guides(fill = guide_colourbar(barwidth = 40, barheight = 1.5)) +
     ggspatial::annotation_scale(
       location = "tr", text_cex = 1.5,
@@ -150,33 +147,38 @@ map_median_res <- function(pro_scores,
 map_median_res_d_vs_n <- function(pro_scores, borders) {
   all <- map_median_res(pro_scores, borders = borders) +
     annotate("text",
-             x = 4.925,
-             y = 47.38,
-             label = expression(bold("ALL")),
-             size = 6)
+      x = 4.925,
+      y = 47.38,
+      label = expression(bold("ALL")),
+      size = 6
+    )
   night <- map_median_res(pro_scores[which(pro_scores$day_night == "night"), ],
-                        borders = borders) +
+    borders = borders
+  ) +
     annotate("text",
-             x = 4.925,
-             y = 47.38,
-             label = expression(bold("NIGHT")),
-             size = 6)
+      x = 4.925,
+      y = 47.38,
+      label = expression(bold("NIGHT")),
+      size = 6
+    )
   day <- map_median_res(pro_scores[which(pro_scores$day_night == "day"), ],
-                          borders = borders) +
+    borders = borders
+  ) +
     annotate("text",
-             x = 4.925,
-             y = 47.38,
-             label = expression(bold("DAY")),
-             size = 6)
+      x = 4.925,
+      y = 47.38,
+      label = expression(bold("DAY")),
+      size = 6
+    )
   p <- ggpubr::ggarrange(all,
-                         NULL,
-                         ggpubr::ggarrange(day, night, ncol = 2, legend = "none"),
-                         NULL,
-                         nrow = 4,
-                         heights = c(1, 0, 1, 0),
-                         common.legend = TRUE,
-                         legend = "top"
-                         )
+    NULL,
+    ggpubr::ggarrange(day, night, ncol = 2, legend = "none"),
+    NULL,
+    nrow = 4,
+    heights = c(1, 0, 1, 0),
+    common.legend = TRUE,
+    legend = "top"
+  )
   return(p)
 }
 
@@ -185,26 +187,35 @@ plot_res_vs_ref <- function(pro_scores,
                             y_var = "temp_sea",
                             model = "joint") {
   res_model <- paste0("res_", model)
-  ggplot(data = pro_scores,
-         aes(y = .data[[res_model]],
-             x = .data[[y_var]])) +
+  ggplot(
+    data = pro_scores,
+    aes(
+      y = .data[[res_model]],
+      x = .data[[y_var]]
+    )
+  ) +
     stat_density2d(aes(fill = ..density..),
-                   alpha = 1,
-                   geom = "tile",
-                   contour = FALSE,
-                   n = 200) +
-    scale_fill_continuous(low = "white",
-                          high = load_palette("model")[model]) +
-    #geom_point() +
+      alpha = 1,
+      geom = "tile",
+      contour = FALSE,
+      n = 200
+    ) +
+    scale_fill_continuous(
+      low = "white",
+      high = load_palette("model")[model]
+    ) +
+    # geom_point() +
     geom_abline(aes(slope = 0, intercept = 0), color = "red") +
     geom_abline(aes(slope = 0, intercept = -1),
-                color = "black",
-                linetype = "dotted") +
+      color = "black",
+      linetype = "dotted"
+    ) +
     geom_abline(aes(slope = 0, intercept = 1),
-                color = "black",
-                linetype = "dotted") +
-    ylab(latex2exp::TeX("$T_{pred} - T_{ref}$ (°C)")) +
-    xlab(latex2exp::TeX("$T_{ref}$ (°C)")) +
+      color = "black",
+      linetype = "dotted"
+    ) +
+    ylab(latex2exp::TeX("$T2M_{pred} - T2M_{ref}$ (°C)")) +
+    xlab(latex2exp::TeX("$T2M_{ref}$ (°C)")) +
     coord_equal() +
     theme(
       legend.position = "bottom",
@@ -217,11 +228,11 @@ plot_res_vs_ref <- function(pro_scores,
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      legend.margin=margin(0,0,0,0),
+      legend.margin = margin(0, 0, 0, 0),
       legend.box.spacing = unit(0, "pt"),
       legend.text.align = 0,
-      legend.key.width = unit(1, 'cm'),
-      panel.grid.major = element_line(color="grey", size = 0.2),
+      legend.key.width = unit(1, "cm"),
+      panel.grid.major = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     ) +
     guides(linetype = guide_legend(nrow = 2))
@@ -232,30 +243,43 @@ plot_predmean_vs_ref <- function(pro_scores,
                                  y_var = "temp_sea",
                                  model = "joint") {
   pred_model <- paste0("pred_mean_", model)
-  tn <- floor(min(c(as.data.frame(pro_scores)[, pred_model],
-                    as.data.frame(pro_scores)[, y_var])))
-  tx <- ceiling(max(c(as.data.frame(pro_scores)[, pred_model],
-                      as.data.frame(pro_scores)[, y_var])))
-  ggplot(data = pro_scores,
-         aes(y = .data[[pred_model]],
-             x = .data[[y_var]])) +
-    #geom_point() +
+  tn <- floor(min(c(
+    as.data.frame(pro_scores)[, pred_model],
+    as.data.frame(pro_scores)[, y_var]
+  )))
+  tx <- ceiling(max(c(
+    as.data.frame(pro_scores)[, pred_model],
+    as.data.frame(pro_scores)[, y_var]
+  )))
+  ggplot(
+    data = pro_scores,
+    aes(
+      y = .data[[pred_model]],
+      x = .data[[y_var]]
+    )
+  ) +
+    # geom_point() +
     stat_density2d(aes(fill = ..density..),
-                   alpha = 1,
-                   geom = "tile",
-                   contour = FALSE,
-                   n = 200) +
-    scale_fill_continuous(low = "white",
-                          high = load_palette("model")[model]) +
+      alpha = 1,
+      geom = "tile",
+      contour = FALSE,
+      n = 200
+    ) +
+    scale_fill_continuous(
+      low = "white",
+      high = load_palette("model")[model]
+    ) +
     geom_abline(aes(slope = 1, intercept = 0), color = "red") +
     geom_abline(aes(slope = 1, intercept = -1),
-                color = "black",
-                linetype = "dotted") +
+      color = "black",
+      linetype = "dotted"
+    ) +
     geom_abline(aes(slope = 1, intercept = 1),
-                color = "black",
-                linetype = "dotted") +
-    ylab(latex2exp::TeX("$T_{pred}$ (°C)")) +
-    xlab(latex2exp::TeX("$T_{ref}$ (°C)")) +
+      color = "black",
+      linetype = "dotted"
+    ) +
+    ylab(latex2exp::TeX("$T2M_{pred}$ (°C)")) +
+    xlab(latex2exp::TeX("$T2M_{ref}$ (°C)")) +
     xlim(c(tn, tx)) +
     ylim(c(tn, tx)) +
     coord_equal() +
@@ -270,11 +294,11 @@ plot_predmean_vs_ref <- function(pro_scores,
       plot.caption = element_text(size = 18),
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
-      legend.margin=margin(0,0,0,0),
+      legend.margin = margin(0, 0, 0, 0),
       legend.box.spacing = unit(0, "pt"),
       legend.text.align = 0,
-      legend.key.width = unit(1, 'cm'),
-      panel.grid.major = element_line(color="grey", size = 0.2),
+      legend.key.width = unit(1, "cm"),
+      panel.grid.major = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     ) +
     guides(linetype = guide_legend(nrow = 2))
@@ -286,16 +310,18 @@ boxplot_res_lcz <- function(pro_scores, model = "joint") {
   pal <- load_palette("lcz")
   p <- ggplot(pro_scores) +
     geom_boxplot(aes(y = .data[[res_model]], x = lcz_300m, fill = lcz_300m),
-                 outlier.size = 0.5,
-                 outlier.shape = 1
+      outlier.size = 0.5,
+      outlier.shape = 1
     ) +
-    scale_fill_manual(values = pal$col,
-                      breaks = pal$class,
-                      labels = pal$meaning) +
+    scale_fill_manual(
+      values = pal$col,
+      breaks = pal$class,
+      labels = pal$meaning
+    ) +
     facet_wrap(vars(ifelse(day_night == "day", "DAY", "NIGHT"))) +
     coord_cartesian(ylim = c(-5, 5)) +
     geom_hline(yintercept = 0, color = "red") +
-    ylab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
+    ylab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
     scale_y_continuous(breaks = seq(-5, 5, 1)) +
     xlab("") +
     labs(fill = "Local Climate Zone") +
@@ -308,9 +334,8 @@ boxplot_res_lcz <- function(pro_scores, model = "joint") {
       legend.text = element_text(size = 18),
       legend.title = element_text(size = 18),
       strip.text = element_text(size = 20),
-      panel.grid.major = element_line(color="grey", size = 0.2),
+      panel.grid.major = element_line(color = "grey", size = 0.2),
       panel.background = element_rect(fill = "white")
     )
   return(p)
 }
-

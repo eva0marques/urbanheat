@@ -54,11 +54,11 @@ evaluate_pred <- function(pred, pro, info, borders) {
 
   # rmse
   info$rmse_car <- sqrt(sum((pro$res_car)**2, na.rm = TRUE) /
-                 length(which(!is.na(pro$res_car))))
+    length(which(!is.na(pro$res_car))))
   info$rmse_cws <- sqrt(sum((pro$res_cws)**2, na.rm = TRUE) /
-                       length(which(!is.na(pro$res_cws))))
+    length(which(!is.na(pro$res_cws))))
   info$rmse_joint <- sqrt(sum((pro$res_joint)**2, na.rm = TRUE) /
-                       length(which(!is.na(pro$res_joint))))
+    length(which(!is.na(pro$res_joint))))
 
   # mae
   info$mae_car <- mean(abs(pro$res_car), na.rm = TRUE)
@@ -68,7 +68,7 @@ evaluate_pred <- function(pred, pro, info, borders) {
   # median residuals
   info$med_res_car <- median(pro$res_car, na.rm = TRUE)
   info$med_res_cws <- median(pro$res_cws, na.rm = TRUE)
-  info$med_res_joint <- median(pro$res_joint , na.rm = TRUE)
+  info$med_res_joint <- median(pro$res_joint, na.rm = TRUE)
 
   return(list("pro" = pro, "scores" = info))
 }
@@ -86,11 +86,11 @@ overall_scores <- function(pro_scores, y_var = "temp_sea") {
   }
 
   rmse_car <- sqrt(sum((pro_scores$res_car)**2, na.rm = TRUE) /
-                     length(which(!is.na(pro_scores$res_car))))
+    length(which(!is.na(pro_scores$res_car))))
   rmse_cws <- sqrt(sum((pro_scores$res_cws)**2, na.rm = TRUE) /
-                     length(which(!is.na(pro_scores$res_cws))))
+    length(which(!is.na(pro_scores$res_cws))))
   rmse_joint <- sqrt(sum((pro_scores$res_joint)**2, na.rm = TRUE) /
-                       length(which(!is.na(pro_scores$res_joint))))
+    length(which(!is.na(pro_scores$res_joint))))
 
   # mae
   mae_car <- mean(abs(pro_scores$res_car), na.rm = TRUE)
@@ -100,7 +100,7 @@ overall_scores <- function(pro_scores, y_var = "temp_sea") {
   # median residuals
   med_res_car <- median(pro_scores$res_car, na.rm = TRUE)
   med_res_cws <- median(pro_scores$res_cws, na.rm = TRUE)
-  med_res_joint <- median(pro_scores$res_joint , na.rm = TRUE)
+  med_res_joint <- median(pro_scores$res_joint, na.rm = TRUE)
 
   return(list(
     "rsq_car" = rsq_car,

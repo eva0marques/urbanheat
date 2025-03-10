@@ -10,13 +10,14 @@ plot_ts <- function(ts, out_path, car, cws, pred, rad, borders) {
   )
   scores <- read.csv(paste0(out_path, "scores_201808_dijon.csv"))
   scores$time <- as.POSIXct(scores$time,
-                            format = "%Y-%m-%d %H:%M:%S",
-                            tz = "UTC")
+    format = "%Y-%m-%d %H:%M:%S",
+    tz = "UTC"
+  )
   pro_scores <- read.csv(
     paste0(out_path, "mustard_evaluation_201808_dijon.csv")
   )
   pro_scores$time <- pro_scores$time |>
-    sapply(FUN = function (x) {
+    sapply(FUN = function(x) {
       ifelse(nchar(x) == 10, paste(x, "00:00:00"), x)
     }) |>
     as.POSIXct(format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
@@ -36,7 +37,7 @@ plot_ts <- function(ts, out_path, car, cws, pred, rad, borders) {
   p6 <- density_beta_obs(scores_ts)
   p7 <- density_beta_covar(scores_ts)
 
-  #F or hyperprec plot, need to rerun the model:
+  # F or hyperprec plot, need to rerun the model:
   set.seed(12)
   p_str <- strftime(ts, format = "%Y-%m-%d %H:%M:%S", tz = "UTC") |>
     as.POSIXct(tz = "UTC")
@@ -58,19 +59,20 @@ plot_ts <- function(ts, out_path, car, cws, pred, rad, borders) {
 plot_eval <- function(out_path) {
   scores <- read.csv(paste0(out_path, "scores_201808_dijon.csv"))
   scores$time <- as.POSIXct(scores$time,
-                            format = "%Y-%m-%d %H:%M:%S",
-                            tz = "UTC")
+    format = "%Y-%m-%d %H:%M:%S",
+    tz = "UTC"
+  )
   pro_scores <- read.csv(
     paste0(out_path, "mustard_evaluation_201808_dijon.csv")
-    )
+  )
   pro_scores$time <- pro_scores$time |>
-    sapply(FUN = function (x) {
+    sapply(FUN = function(x) {
       ifelse(nchar(x) == 10, paste(x, "00:00:00"), x)
     }) |>
     as.POSIXct(format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   pro_scores <- add_sw(pro_scores, rad)
-  #scores <- add_sw(scores, rad)
+  # scores <- add_sw(scores, rad)
   scores$day_night <- ifelse(scores$sw == 0, "night", "day")
 
   # plots
@@ -107,12 +109,14 @@ save_plots_paper <- function(ts_a,
   p3 <- ggpubr::ggarrange(plots_ts_a[[3]], plots_ts_b[[3]], ncol = 2)
   ggsave(
     plot = p3,
-    paste0(out_path,
-           "map_temp_sea_joint_pred_mean_pro_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "map_temp_sea_joint_pred_mean_pro_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 12,
     height = 6,
     dpi = 300,
@@ -122,12 +126,14 @@ save_plots_paper <- function(ts_a,
   p4 <- ggpubr::ggarrange(plots_ts_a[[4]], plots_ts_b[[4]], ncol = 2)
   ggsave(
     plot = p4,
-    paste0(out_path,
-           "map_temp_sea_joint_pred_sd_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "map_temp_sea_joint_pred_sd_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 12,
     height = 6,
     dpi = 300,
@@ -137,12 +143,14 @@ save_plots_paper <- function(ts_a,
   p5 <- ggpubr::ggarrange(plots_ts_a[[5]], plots_ts_b[[5]], ncol = 2)
   ggsave(
     plot = p5,
-    paste0(out_path,
-           "map_temp_sea_obs_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "map_temp_sea_obs_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 12,
     height = 6,
     dpi = 300,
@@ -150,17 +158,20 @@ save_plots_paper <- function(ts_a,
   )
 
   p7 <- ggpubr::ggarrange(plots_ts_a[[7]],
-                         plots_ts_b[[7]],
-                         ncol = 2,
-                         common.legend = TRUE)
+    plots_ts_b[[7]],
+    ncol = 2,
+    common.legend = TRUE
+  )
   ggsave(
     plot = p7,
-    paste0(out_path,
-           "marginal_density_beta_covar_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "marginal_density_beta_covar_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 14,
     height = 4,
     dpi = 300,
@@ -168,17 +179,20 @@ save_plots_paper <- function(ts_a,
   )
 
   p6 <- ggpubr::ggarrange(plots_ts_a[[6]],
-                           plots_ts_b[[6]],
-                           ncol = 2,
-                           common.legend = TRUE)
+    plots_ts_b[[6]],
+    ncol = 2,
+    common.legend = TRUE
+  )
   ggsave(
     plot = p6,
-    paste0(out_path,
-           "marginal_density_beta_obs_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "marginal_density_beta_obs_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 14,
     height = 4,
     dpi = 300,
@@ -186,17 +200,20 @@ save_plots_paper <- function(ts_a,
   )
 
   p8 <- ggpubr::ggarrange(plots_ts_a[[8]],
-                      plots_ts_b[[8]],
-                      ncol = 2,
-                      common.legend = TRUE)
+    plots_ts_b[[8]],
+    ncol = 2,
+    common.legend = TRUE
+  )
   ggsave(
     plot = p8,
-    paste0(out_path,
-           "marginal_density_hyperprec_obs_",
-           format(ts_a, "%Y%m%d%H"),
-           "_",
-           format(ts_b, "%Y%m%d%H"),
-           ".png"),
+    paste0(
+      out_path,
+      "marginal_density_hyperprec_obs_",
+      format(ts_a, "%Y%m%d%H"),
+      "_",
+      format(ts_b, "%Y%m%d%H"),
+      ".png"
+    ),
     width = 14,
     height = 4,
     dpi = 300,
@@ -206,55 +223,62 @@ save_plots_paper <- function(ts_a,
   # evaluation plots
   p_a <- plots_eval[[1]]
   ggsave(p_a,
-         filename = paste0(out_path, "/tiles_fixed_effects.png"),
-         dpi = 300,
-         height = 7,
-         width = 12,
-         bg = "white")
+    filename = paste0(out_path, "/tiles_fixed_effects.png"),
+    dpi = 300,
+    height = 7,
+    width = 12,
+    bg = "white"
+  )
 
   p_b <- plots_eval[[2]]
   ggsave(p_b,
-         filename = paste0(out_path, "/tiles_rmse.png"),
-         dpi = 300,
-         height = 7,
-         width = 16,
-         bg = "white")
+    filename = paste0(out_path, "/tiles_rmse.png"),
+    dpi = 300,
+    height = 7,
+    width = 16,
+    bg = "white"
+  )
 
   p_c <- plots_eval[[3]]
   ggsave(p_c,
-         filename = paste0(out_path, "/tiles_obs_intercepts.png"),
-         dpi = 300,
-         height = 7,
-         width = 16,
-         bg = "white")
+    filename = paste0(out_path, "/tiles_obs_intercepts.png"),
+    dpi = 300,
+    height = 7,
+    width = 16,
+    bg = "white"
+  )
 
   p_d <- plots_eval[[4]]
   ggsave(p_d,
-         filename = paste0(out_path, "/map_median_res.png"),
-         dpi = 300,
-         height = 12,
-         width = 16,
-         bg = "white")
+    filename = paste0(out_path, "/map_median_res.png"),
+    dpi = 300,
+    height = 12,
+    width = 16,
+    bg = "white"
+  )
 
   p_e <- plots_eval[[5]]
   ggsave(p_e,
-         filename = paste0(out_path, "/density_scores.png"),
-         dpi = 300,
-         height = 7,
-         width = 12,
-         bg = "white")
+    filename = paste0(out_path, "/density_scores.png"),
+    dpi = 300,
+    height = 7,
+    width = 12,
+    bg = "white"
+  )
 
   p_fgh <- ggpubr::ggarrange(
     plots_eval[[6]],
     plots_eval[[7]],
     plots_eval[[8]],
     nrow = 3
-    )
+  )
   ggsave(
     plot = p_fgh,
-    paste0(out_path,
-           "tiles_hyper_prec_vs_n_",
-           ".png"),
+    paste0(
+      out_path,
+      "tiles_hyper_prec_vs_n_",
+      ".png"
+    ),
     width = 10,
     height = 18,
     dpi = 300,
@@ -264,9 +288,11 @@ save_plots_paper <- function(ts_a,
   p_i <- plots_eval[[9]]
   ggsave(
     plot = p_i,
-    paste0(out_path,
-           "boxplot_residuals_lcz_300m_",
-           ".png"),
+    paste0(
+      out_path,
+      "boxplot_residuals_lcz_300m_",
+      ".png"
+    ),
     width = 10,
     height = 6,
     dpi = 300,

@@ -60,8 +60,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     mesh_car <- INLA::inla.mesh.2d(
       loc = cbind(car_samp$lon, car_samp$lat),
       max.edge = 0.1, # in meters: 10000
-      cutoff = 0.005, #500
-      offset = c(0.01, 0.02), #1000 2000
+      cutoff = 0.005, # 500
+      offset = c(0.01, 0.02), # 1000 2000
       boundary = domain
     )
     mesh_cws <- INLA::inla.mesh.2d(
@@ -288,14 +288,19 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
 
     # prior on process model
     control_fixed <- list(
-      mean = list(int = info$mu_0,
-                  int_car = info$mu_car,
-                  int_cws = info$mu_cws,
-                  default = info$mu_covar),
-      prec = list(int = info$prec_beta_int,
-                  int_car = info$prec_beta_obs,
-                  int_cws = info$prec_beta_obs,
-                  default = info$prec_covar))
+      mean = list(
+        int = info$mu_0,
+        int_car = info$mu_car,
+        int_cws = info$mu_cws,
+        default = info$mu_covar
+      ),
+      prec = list(
+        int = info$prec_beta_int,
+        int_car = info$prec_beta_obs,
+        int_cws = info$prec_beta_obs,
+        default = info$prec_covar
+      )
+    )
 
     est_loggamma_param <- function(a, b) {
       s <- runif(n = 50000, min = a, max = b)
@@ -305,10 +310,14 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       return(list(a2 = a2, b2 = b2))
     }
 
-    prec_param_car <- est_loggamma_param(info$s2_car_prior - 0.2,
-                                         info$s2_car_prior + 0.2)
-    prec_param_cws <- est_loggamma_param(info$s2_cws_prior - 0.2,
-                                         info$s2_cws_prior + 0.2)
+    prec_param_car <- est_loggamma_param(
+      info$s2_car_prior - 0.2,
+      info$s2_car_prior + 0.2
+    )
+    prec_param_cws <- est_loggamma_param(
+      info$s2_cws_prior - 0.2,
+      info$s2_cws_prior + 0.2
+    )
     info$a2_car <- prec_param_car$a2
     info$b2_car <- prec_param_car$b2
     info$a2_cws <- prec_param_cws$a2
@@ -335,8 +344,8 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     )
 
     # gaussian hyperprec prior
-    #info$s2_cws_prior_prec <- 4
-    #info$s2_car_prior_prec <- 4
+    # info$s2_cws_prior_prec <- 4
+    # info$s2_car_prior_prec <- 4
     control_family_gaussian <- list(
       list(
         hyper = list(
@@ -386,9 +395,9 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
         prec.intercept = info$prec_beta,
         mean = list(int_car = info$mu_car, default = info$mu_covar),
         prec = list(int_car = info$prec_beta, default = info$prec_covar)
-        ),
+      ),
       control.family = control_family_gaussian[[1]],
-      #control.family = control_family_loggamma[[1]],
+      # control.family = control_family_loggamma[[1]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
@@ -410,7 +419,7 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
         prec = list(int_cws = info$prec_beta, default = info$prec_covar)
       ),
       control.family = control_family_loggamma[[2]],
-      #control.family = control_family_gaussian[[2]],
+      # control.family = control_family_gaussian[[2]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
@@ -428,7 +437,7 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       family = c("gaussian", "gaussian"),
       control.fixed = control_fixed,
       control.family = control_family_loggamma,
-      #control.family = control_family_gaussian,
+      # control.family = control_family_gaussian,
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
@@ -443,7 +452,7 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     # Hence they are ignored by the model and the predicted value is
     # the y_var without the measurement error.
 
-    #store prediction mean, sd, and quantiles
+    # store prediction mean, sd, and quantiles
     pred$time <- ts
     index <- INLA::inla.stack.index(stk_full_car, tag = "pred")$data
     pred$pred_mean_car <- mod_car$summary.fitted.values[index, "mean"]
@@ -462,16 +471,16 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     pred$pred_sd_joint <- mod_joint$summary.fitted.values[index, "sd"]
     info <- as.data.frame(info)
 
-    return(list("mod_car" = mod_car,
-                "mod_cws" = mod_cws,
-                "mod_joint" = mod_joint,
-                "pred" = pred,
-                "info" = info))
-
+    return(list(
+      "mod_car" = mod_car,
+      "mod_cws" = mod_cws,
+      "mod_joint" = mod_joint,
+      "pred" = pred,
+      "info" = info
+    ))
   } else {
     return(NULL)
   }
   end_time <- Sys.time()
   cat(end_time - start_time)
 }
-

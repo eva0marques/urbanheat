@@ -45,7 +45,7 @@ density_scores <- function(pro_scores, scores) {
     geom_vline(xintercept = 0, color = "grey") +
     scale_color_manual(values = load_palette("model")) +
     scale_x_continuous(breaks = seq(-3, 3, .5), limits = c(-3, 3)) +
-    coord_cartesian(xlim = c(-3,3)) +
+    coord_cartesian(xlim = c(-3, 3)) +
     scale_linetype_manual("", values = linetype) +
     ylab(paste0("Empirical density")) +
     annotate("text",
@@ -54,16 +54,16 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("DAY")),
       size = 6
     ) +
-    xlab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
+    xlab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
     labs(
       color = "",
       caption = bquote(
         italic(
           paste(
             "Sample of",
-            ~.(n_pro),
+            ~ .(n_pro),
             " reference stations *",
-            ~.(n_day),
+            ~ .(n_day),
             " maps of Aug. 2018"
           )
         )
@@ -95,7 +95,7 @@ density_scores <- function(pro_scores, scores) {
     geom_vline(xintercept = 0, color = "grey") +
     scale_color_manual(values = load_palette("model")) +
     scale_x_continuous(breaks = seq(-3, 3, .5), limits = c(-3, 3)) +
-    coord_cartesian(xlim = c(-3,3)) +
+    coord_cartesian(xlim = c(-3, 3)) +
     scale_linetype_manual("", values = linetype) +
     ylab(paste0("Empirical density")) +
     annotate("text",
@@ -104,16 +104,16 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("NIGHT")),
       size = 6
     ) +
-    xlab(latex2exp::TeX("$T_{pred}-T_{ref}$ (°C)")) +
+    xlab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
     labs(
       color = "",
       caption = bquote(
         italic(
           paste(
             "Sample of",
-            ~.(n_pro),
+            ~ .(n_pro),
             " reference stations *",
-            ~.(n_night),
+            ~ .(n_night),
             " maps of Aug. 2018"
           )
         )
@@ -159,7 +159,7 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~.(n_day),
+            ~ .(n_day),
             " maps of Aug. 2018"
           )
         )
@@ -205,9 +205,9 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~.(n_pro),
+            ~ .(n_pro),
             " reference stations *",
-            ~.(n_night),
+            ~ .(n_night),
             " maps of Aug. 2018"
           )
         )
@@ -244,8 +244,8 @@ density_scores <- function(pro_scores, scores) {
     scale_linetype_manual("", values = linetype) +
     ylab(paste0("Empirical cumulative density")) +
     annotate("text",
-             x = .15, y = .95,
-             label = expression(bold("DAY")), size = 6
+      x = .15, y = .95,
+      label = expression(bold("DAY")), size = 6
     ) +
     xlab("RMSE (°C)") +
     labs(
@@ -254,7 +254,7 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~.(n_day),
+            ~ .(n_day),
             " maps of Aug. 2018"
           )
         )
@@ -291,8 +291,8 @@ density_scores <- function(pro_scores, scores) {
     scale_linetype_manual("", values = linetype) +
     ylab(paste0("Empirical cumulative density")) +
     annotate("text",
-             x = .15, y = .95,
-             label = expression(bold("NIGHT")), size = 6
+      x = .15, y = .95,
+      label = expression(bold("NIGHT")), size = 6
     ) +
     xlab("RMSE (°C)") +
     labs(
@@ -301,9 +301,9 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~.(n_pro),
+            ~ .(n_pro),
             " reference stations *",
-            ~.(n_night),
+            ~ .(n_night),
             " maps of Aug. 2018"
           )
         )
@@ -354,7 +354,7 @@ density_scores <- function(pro_scores, scores) {
   scores_dayvsnight <- ggpubr::ggarrange(
     rmse_dayvsnight_ecdf,
     res_dayvsnight,
-    #widths = c(1,1.5),
+    # widths = c(1,1.5),
     ncol = 2
   )
 

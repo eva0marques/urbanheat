@@ -9,37 +9,49 @@ run_case_study <- function(r_path, in_path, out_path) {
 
   # open data
   car <- data.table::fread(paste0(in_path, "car_processed_for_bhm.csv")) |>
-    data_bhm(temp = "temp",
-             lat = "lat",
-             lon = "lon",
-             time = "time",
-             build_h = "H_MEAN",
-             build_d = "BUILD_DENS",
-             dem = "alt",
-             network = "car")
-  cws_before_qc <- data.table::fread(paste0(in_path,
-                                            "cws_processed_for_bhm.csv"))
+    data_bhm(
+      temp = "temp",
+      lat = "lat",
+      lon = "lon",
+      time = "time",
+      build_h = "H_MEAN",
+      build_d = "BUILD_DENS",
+      dem = "alt",
+      network = "car"
+    )
+  cws_before_qc <- data.table::fread(paste0(
+    in_path,
+    "cws_processed_for_bhm.csv"
+  ))
   cws <- cws_before_qc[which(cws_before_qc$m4), ] |>
-    data_bhm(temp = "temp",
-             lat = "lat",
-             lon = "lon",
-             time = "time",
-             build_h = "H_MEAN",
-             build_d = "BUILD_DENS",
-             dem = "alt.y",
-             network = "cws")
-  pro <- data.table::fread(paste0(in_path,
-                                  "mustardijon_2018010100_2018123123.csv")) |>
-    data_bhm(temp = "TEMP",
-             lat = "LATITUDE",
-             lon = "LONGITUDE",
-             time = "DATE",
-             build_h = "H_MEAN",
-             build_d = "BUILD_DENS",
-             dem = "ALTITUDE",
-             network = "mustardijon")
-  mustard <- read.csv(paste0(in_path,
-                             "mustard_metadata_stations_mustardijon_clc.csv"))
+    data_bhm(
+      temp = "temp",
+      lat = "lat",
+      lon = "lon",
+      time = "time",
+      build_h = "H_MEAN",
+      build_d = "BUILD_DENS",
+      dem = "alt.y",
+      network = "cws"
+    )
+  pro <- data.table::fread(paste0(
+    in_path,
+    "mustardijon_2018010100_2018123123.csv"
+  )) |>
+    data_bhm(
+      temp = "TEMP",
+      lat = "LATITUDE",
+      lon = "LONGITUDE",
+      time = "DATE",
+      build_h = "H_MEAN",
+      build_d = "BUILD_DENS",
+      dem = "ALTITUDE",
+      network = "mustardijon"
+    )
+  mustard <- read.csv(paste0(
+    in_path,
+    "mustard_metadata_stations_mustardijon_clc.csv"
+  ))
   mustard$lcz_100m <- as.character(mustard$LCZ_100.m)
   mustard$lcz_300m <- as.character(mustard$LCZ_300.m)
   mustard[mustard == "101"] <- "A"
@@ -50,15 +62,16 @@ run_case_study <- function(r_path, in_path, out_path) {
   mustard[mustard == "107"] <- "G"
   mustard[mustard == "9999"] <- "9"
   pro <- merge(pro,
-               mustard[, c("X", "Y", "lcz_100m", "lcz_300m")],
-               by.x = c("lon", "lat"),
-               by.y = c("X", "Y"),
-               all.y = FALSE)
+    mustard[, c("X", "Y", "lcz_100m", "lcz_300m")],
+    by.x = c("lon", "lat"),
+    by.y = c("X", "Y"),
+    all.y = FALSE
+  )
 
   borders <- sf::st_read(paste0(in_path, "Dijon.shp")) |>
     sf::st_transform(crs = "epsg:4326")
 
-  format_pred <- function(x, lat, lon, build_h, build_d, dem){
+  format_pred <- function(x, lat, lon, build_h, build_d, dem) {
     x <- as.data.frame(x)
     y <- x |>
       dplyr::rename("lat" = lat) |>
@@ -69,12 +82,16 @@ run_case_study <- function(r_path, in_path, out_path) {
     y <- y[, c("lat", "lon", "build_h", "build_d", "dem")]
   }
 
-  pred <- data.table::fread(paste0(in_path,
-                                   "prediction_grid_mapuce_dem.csv")) |>
+  pred <- data.table::fread(paste0(
+    in_path,
+    "prediction_grid_mapuce_dem.csv"
+  )) |>
     format_pred("lat", "lon", "H_MEAN", "BUILD_DENS", "dem")
 
-  rad <- read.csv(paste0(in_path,
-                         "radome_2018010100_2019010100_dijonlongevic.csv"))
+  rad <- read.csv(paste0(
+    in_path,
+    "radome_2018010100_2019010100_dijonlongevic.csv"
+  ))
   rad$DATE <- as.POSIXct(rad$DATE, tz = "UTC")
 
   # run model on every hour of 2018/08 in Dijon (France)
@@ -114,28 +131,30 @@ run_case_study <- function(r_path, in_path, out_path) {
         inference$info
       )
       eval <- evaluate_pred(inference$pred,
-                            pro,
-                            info = inference$info,
-                            borders
+        pro,
+        info = inference$info,
+        borders
       )
       file <- paste0(out_path, "scores_201808_dijon.csv")
       write.table(eval$scores,
-                  file,
-                  append = TRUE,
-                  sep = ",",
-                  col.names = !file.exists(file),
-                  row.names = FALSE,
-                  quote = FALSE)
+        file,
+        append = TRUE,
+        sep = ",",
+        col.names = !file.exists(file),
+        row.names = FALSE,
+        quote = FALSE
+      )
       file <- paste0(out_path, "mustard_evaluation_201808_dijon.csv")
       pro_eval <- as.data.frame(eval$pro)
       pro_eval$geometry <- NULL
       write.table(pro_eval,
-                  file,
-                  append = TRUE,
-                  sep = ",",
-                  col.names = !file.exists(file),
-                  row.names = FALSE,
-                  quote = FALSE)
+        file,
+        append = TRUE,
+        sep = ",",
+        col.names = !file.exists(file),
+        row.names = FALSE,
+        quote = FALSE
+      )
     }
   }
 }

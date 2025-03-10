@@ -5,12 +5,16 @@ store_post_info <- function(mod, info) {
   list_marg <- mod$marginals.fixed
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(names(list_marg), times = sapply(list_marg, nrow))
-  marg_m <- unlist(lapply(X = list_marg,
-                          FUN = INLA::inla.emarginal, # computes the expectation
-                          fun = function(x) x))
-  marg_mm <- unlist(lapply(X = list_marg,
-                           FUN = INLA::inla.emarginal,
-                           fun = function(x) x^2))
+  marg_m <- unlist(lapply(
+    X = list_marg,
+    FUN = INLA::inla.emarginal, # computes the expectation
+    fun = function(x) x
+  ))
+  marg_mm <- unlist(lapply(
+    X = list_marg,
+    FUN = INLA::inla.emarginal,
+    fun = function(x) x^2
+  ))
   # -- var[X] = E[X^2] − E[X]^2 = mm - m^2
   marg_sd <- sqrt(marg_mm - marg_m^2)
   marg_m_names <- unlist(lapply(names(list_marg), paste0, "_mean"))
@@ -24,12 +28,16 @@ store_post_info <- function(mod, info) {
   names(list_marg) <- c("prec_car", "prec_cws", "range_s", "sd_s")
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(names(list_marg), times = sapply(list_marg, nrow))
-  marg_m <- unlist(lapply(X = list_marg,
-                          FUN = INLA::inla.emarginal, # computes the expectation
-                          fun = function(x) x))
-  marg_mm <- unlist(lapply(X = list_marg,
-                           FUN = INLA::inla.emarginal,
-                           fun = function(x) x^2))
+  marg_m <- unlist(lapply(
+    X = list_marg,
+    FUN = INLA::inla.emarginal, # computes the expectation
+    fun = function(x) x
+  ))
+  marg_mm <- unlist(lapply(
+    X = list_marg,
+    FUN = INLA::inla.emarginal,
+    fun = function(x) x^2
+  ))
   # -- var[X] = E[X^2] − E[X]^2 = mm - m^2
   marg_sd <- sqrt(marg_mm - marg_m^2)
   marg_m_names <- unlist(lapply(names(list_marg), paste0, "_mean"))

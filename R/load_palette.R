@@ -33,7 +33,7 @@ load_palette <- function(name) {
   } else if (name == "uhi") {
     return(c("cadetblue3", "cornsilk", "yellow", "orange", "red", "firebrick"))
   } else if (name == "model") {
-    #return(c("car" = "#BF47FF", "cws" = "#4787FF", "joint" = "#FF6347"))
+    # return(c("car" = "#BF47FF", "cws" = "#4787FF", "joint" = "#FF6347"))
     return(c("car" = "red", "cws" = "orange", "joint" = "#4787FF"))
   } else if (name == "lcz") {
     lcz <- rbind(
@@ -51,7 +51,8 @@ load_palette <- function(name) {
       c("C", "#608323", "C-bush, scrub"),
       c("D", "#b9db79", "D-low plants"),
       c("E", "#000000", "E-bare rock or paved"),
-      c("G", "#6a6afe", "G-water")) |>
+      c("G", "#6a6afe", "G-water")
+    ) |>
       as.data.frame()
     colnames(lcz) <- c("class", "col", "meaning")
     return(lcz)
