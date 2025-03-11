@@ -1,6 +1,6 @@
 #' S4 constructor for weather station hourly observations
 setClass("data_bhm",
-         contains = c("data.frame")
+  contains = c("data.frame")
 )
 
 
@@ -56,12 +56,12 @@ data_bhm <- function(x,
       class(x)[1] %in% c("data.frame", "data.table", "sf", "sftime"),
     "time, temp, lat, lon, build_d, build_h, dem are not all characters." =
       is.character(time) &
-      is.character(temp) &
-      is.character(lat) &
-      is.character(lon) &
-      is.character(build_h) &
-      is.character(build_d) &#
-      is.character(dem),
+        is.character(temp) &
+        is.character(lat) &
+        is.character(lon) &
+        is.character(build_h) &
+        is.character(build_d) & #
+        is.character(dem),
     "temp, lat, lon, time, build_h, build_d, dem columns missing or mispelled." =
       c(temp, lat, lon, time, build_h, build_d, dem) %in% colnames(x)
   )
@@ -80,4 +80,3 @@ data_bhm <- function(x,
     methods::new(Class = "data_bhm")
   return(y)
 }
-

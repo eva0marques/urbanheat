@@ -1,24 +1,67 @@
-run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
+run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
   start_time <- Sys.time()
   coo <- sf::st_coordinates(borders)
   domain <- coo[, c("X", "Y")] |>
     INLA::inla.nonconvex.hull(concave = -.07, resolution = c(200, 200))
 
-  y_var <- "temp"
-  ts_str <- format(ts, "%Y%m%d%H")
+  # store model parameters info
+  info <- list()
+
+  info$y_var <- "temp_sea"
+  info$ts_str <- format(ts, "%Y%m%d%H")
+  info$time <- strftime(ts, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
 
   te <- ts + lubridate::hours(1) - lubridate::seconds(1)
-  car_samp <- car[which(between(car$time, ts, te)), ]
-  cws_samp <- cws[which(between(cws$time, ts, te)), ]
-  n_car <- nrow(car_samp)
-  n_cws <- nrow(cws_samp)
-  if (n_car != 0 && n_cws != 0) {
+  car_samp <- car[which(dplyr::between(car$time, ts, te)), ]
+  cws_samp <- cws[which(dplyr::between(cws$time, ts, te)), ]
+  info$n_car <- nrow(car_samp)
+  info$n_cws <- nrow(cws_samp)
+  if (info$n_car != 0 && info$n_cws != 0) {
+    # altitude gradient correction
+    car_samp$grad_z <- apply(
+      car_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    car_samp$temp_sea <- apply(
+      car_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+
+    cws_samp$grad_z <- apply(
+      cws_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$delta
+    )
+    cws_samp$temp_sea <- apply(
+      cws_samp[, c("dem", "temp")], 1,
+      function(y) grad_alt(y["dem"], y["temp"])$temp_sea
+    )
+
+    # covariates standardization
+    # -- extract mean and sd for the whole spatial domain (grid)
+    means <- apply(pred[, c("dem", "build_d", "build_h")], 2, mean)
+    stdevs <- apply(pred[, c("dem", "build_d", "build_h")], 2, sd)
+
+    # -- standardize car data
+    car_samp$dem <- (car_samp$dem - means[1]) / stdevs[1]
+    car_samp$build_d <- (car_samp$build_d - means[2]) / stdevs[2]
+    car_samp$build_h <- (car_samp$build_h - means[3]) / stdevs[3]
+
+    # -- standardize cws data
+    cws_samp$dem <- (cws_samp$dem - means[1]) / stdevs[1]
+    cws_samp$build_d <- (cws_samp$build_d - means[2]) / stdevs[2]
+    cws_samp$build_h <- (cws_samp$build_h - means[3]) / stdevs[3]
+
+    # -- standardize prediction data
+    pred$dem <- (pred$dem - means[1]) / stdevs[1]
+    pred$build_d <- (pred$build_d - means[2]) / stdevs[2]
+    pred$build_h <- (pred$build_h - means[3]) / stdevs[3]
+
     # -- mesh is adapted to data location
     mesh_car <- INLA::inla.mesh.2d(
       loc = cbind(car_samp$lon, car_samp$lat),
       max.edge = 0.1, # in meters: 10000
-      cutoff = 0.005, #500
-      offset = c(0.01, 0.02), #1000 2000
+      cutoff = 0.005, # 500
+      offset = c(0.01, 0.02), # 1000 2000
       boundary = domain
     )
     mesh_cws <- INLA::inla.mesh.2d(
@@ -46,8 +89,12 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
 
     # spde model
 
-    prior_range <- c(0.05, 0.99) # p(range < r0) = p_r0
-    prior_sigma <- c(2, 0.01) # p(sigma > sd0) = p_sd0
+    info$r0 <- 0.05
+    info$p_r0 <- 0.99
+    info$sd0 <- 2
+    info$p_sd0 <- 0.01
+    prior_range <- c(info$r0, info$p_r0) # p(range < r0) = p_r0
+    prior_sigma <- c(info$sd0, info$p_sd0) # p(sigma > sd0) = p_sd0
     spde_car <- INLA::inla.spde2.pcmatern(mesh_car,
       prior.range = prior_range,
       prior.sigma = prior_sigma
@@ -111,7 +158,7 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     # ------ car model data wrapper ------ #
     stk_data_car <- INLA::inla.stack(
       tag = "car",
-      data = list(y = car_samp[, y_var]),
+      data = list(y = car_samp[, info$y_var]),
       A = list(1, a_car),
       effects = list(
         data.frame(
@@ -143,7 +190,7 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     # ------ cws model data wrapper ------ #
     stk_data_cws <- INLA::inla.stack(
       tag = "cws",
-      data = list(y = cws_samp[, y_var]),
+      data = list(y = cws_samp[, info$y_var]),
       A = list(1, a_cws),
       effects = list(
         data.frame(
@@ -175,7 +222,7 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     # ------ joint model data wrapper ------ #
     stk_car_joint <- INLA::inla.stack(
       tag = "car",
-      data = list(y = cbind(car_samp[, y_var], NA)),
+      data = list(y = cbind(car_samp[, info$y_var], NA)),
       A = list(1, a_car_joint),
       effects = list(
         data.frame(
@@ -190,7 +237,7 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     )
     stk_cws_joint <- INLA::inla.stack(
       tag = "cws",
-      data = list(y = cbind(NA, cws_samp[, y_var])),
+      data = list(y = cbind(NA, cws_samp[, info$y_var])),
       A = list(1, a_cws_joint),
       effects = list(
         data.frame(
@@ -225,28 +272,35 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
 
     # prior settings
     # -- mean of beta coefficients (regional temperature)
-    mu_0 <- temp_reg
-    # short wave unir
-    mu_car <- 0.0034 * (sw * 10000 / 3600) + 0.2466
-    mu_cws <- ifelse(hour(ts) %in% seq(6, 18, 1), 0.5, 1.5)
-    mu_covar <- 0
+    info$mu_0 <- temp_reg
+    info$sw <- sw
+    # short wave unit change + regression from marques et al. 2022
+    info$mu_car <- 0.0034 * (sw * 10000 / 3600) + 0.2466
+    info$mu_cws <- ifelse(sw == 0, 1, 0.5) # 1 or 1.5 during the night?
+    info$mu_covar <- 0
     # -- precision of beta coefficients
-    prec_beta <- 10
-    prec_covar <- 0.001 # small value for uninformative
+    info$prec_beta_int <- 2
+    info$prec_beta_obs <- 10
+    info$prec_covar <- 0.001 # small value for uninformative
     # data variance prior
-    s2_car_prior <- 0.8
-    s2_cws_prior <- 1.2
+    info$s2_car_prior <- 0.8
+    info$s2_cws_prior <- 1.2
 
     # prior on process model
     control_fixed <- list(
-      mean = list(int = mu_0,
-                  int_car = mu_car,
-                  int_cws = mu_cws,
-                  default = mu_covar),
-      prec = list(int = 10,
-                  int_car = 10,
-                  int_cws = 10,
-                  default = prec_covar))
+      mean = list(
+        int = info$mu_0,
+        int_car = info$mu_car,
+        int_cws = info$mu_cws,
+        default = info$mu_covar
+      ),
+      prec = list(
+        int = info$prec_beta_int,
+        int_car = info$prec_beta_obs,
+        int_cws = info$prec_beta_obs,
+        default = info$prec_covar
+      )
+    )
 
     est_loggamma_param <- function(a, b) {
       s <- runif(n = 50000, min = a, max = b)
@@ -256,16 +310,26 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       return(list(a2 = a2, b2 = b2))
     }
 
-    prec_param_car <- est_loggamma_param(s2_car_prior - 0.2, s2_car_prior + 0.2)
-    prec_param_cws <- est_loggamma_param(s2_cws_prior - 0.2, s2_cws_prior + 0.2)
+    prec_param_car <- est_loggamma_param(
+      info$s2_car_prior - 0.2,
+      info$s2_car_prior + 0.2
+    )
+    prec_param_cws <- est_loggamma_param(
+      info$s2_cws_prior - 0.2,
+      info$s2_cws_prior + 0.2
+    )
+    info$a2_car <- prec_param_car$a2
+    info$b2_car <- prec_param_car$b2
+    info$a2_cws <- prec_param_cws$a2
+    info$b2_cws <- prec_param_cws$b2
 
-    # prior on likelihood
-    control_family <- list(
+    # loggamma hyperprec prior
+    control_family_loggamma <- list(
       list(
         hyper = list(
           prec = list(
             prior = "loggamma",
-            param = c(prec_param_car$a2, prec_param_car$b2)
+            param = c(info$a2_car, info$b2_car)
           )
         )
       ),
@@ -273,71 +337,114 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
         hyper = list(
           prec = list(
             prior = "loggamma",
-            param = c(prec_param_cws$a2, prec_param_cws$b2)
+            param = c(info$a2_cws, info$b2_cws)
           )
         )
       )
     )
 
+    # gaussian hyperprec prior
+    # info$s2_cws_prior_prec <- 4
+    # info$s2_car_prior_prec <- 4
+    control_family_gaussian <- list(
+      list(
+        hyper = list(
+          prec = list(
+            prior = "gaussian",
+            param = c(info$s2_car_prior, info$s2_car_prior_prec) # mean and prec
+          )
+        )
+      ),
+      list(
+        hyper = list(
+          prec = list(
+            prior = "gaussian",
+            param = c(info$s2_cws_prior, info$s2_cws_prior_prec) # mean and prec
+          )
+        )
+      )
+    )
+
+    # fixed hyperprec
+    control_family_fixed <- list(
+      list(
+        hyper = list(
+          prec = list(
+            initial = info$s2_car_prior,
+            fixed = TRUE
+          )
+        )
+      ),
+      list(
+        hyper = list(
+          prec = list(
+            initial = info$s2_cws_prior,
+            fixed = TRUE
+          )
+        )
+      )
+    )
 
     f_car <- y ~ 1 + int_car + dem + build_d + build_h + f(s, model = spde_car)
-    mod_car <- inla(
+    mod_car <- INLA::inla(
       formula = f_car,
       data = INLA::inla.stack.data(stk_full_car),
       family = "gaussian",
-      #control.fixed = control_fixed,
       control.fixed = list(
-        mean.intercept = mu_0,
-        prec.intercept = 10,
-        mean = list(int_car = mu_car, default = 0),
-        prec = list(int_car = 10, default = 0.001)
-        ),
-      control.family = control_family[[1]],
+        mean.intercept = info$mu_0,
+        prec.intercept = info$prec_beta,
+        mean = list(int_car = info$mu_car, default = info$mu_covar),
+        prec = list(int_car = info$prec_beta, default = info$prec_covar)
+      ),
+      control.family = control_family_gaussian[[1]],
+      # control.family = control_family_loggamma[[1]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
         A = INLA::inla.stack.A(stk_full_car)
       )
     )
-    cat(ts_str, "mod_car done\n")
+    cat(info$ts_str, "mod_car done\n")
     summary(mod_car)
 
-    f_cws <- y ~ 1 + int + dem + build_d + build_h + f(s, model = spde_cws)
-    mod_cws <- inla(
+    f_cws <- y ~ 1 + int_cws + dem + build_d + build_h + f(s, model = spde_cws)
+    mod_cws <- INLA::inla(
       formula = f_cws,
       data = INLA::inla.stack.data(stk_full_cws),
       family = "gaussian",
-      #control.fixed = control_fixed,
       control.fixed = list(
-        mean.intercept = mu_0,
-        prec.intercept = 10,
-        mean = list(int_cws = mu_cws, default = 0),
-        prec = list(int_cws = 10, default = 0.001)
+        mean.intercept = info$mu_0,
+        prec.intercept = info$prec_beta,
+        mean = list(int_cws = info$mu_cws, default = info$mu_covar),
+        prec = list(int_cws = info$prec_beta, default = info$prec_covar)
       ),
-      control.family = control_family[[2]],
+      control.family = control_family_loggamma[[2]],
+      # control.family = control_family_gaussian[[2]],
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
         A = INLA::inla.stack.A(stk_full_cws)
       )
     )
-    cat(ts_str, "mod_cws done\n")
+    cat(info$ts_str, "mod_cws done\n")
     summary(mod_cws)
 
     f_joint <- y ~ -1 + int + int_car + int_cws + dem + build_d + build_h +
       f(s, model = spde_joint)
-    mod_joint <- inla(
+    mod_joint <- INLA::inla(
       formula = f_joint,
       data = INLA::inla.stack.data(stk_full_joint),
       family = c("gaussian", "gaussian"),
       control.fixed = control_fixed,
+      control.family = control_family_loggamma,
+      # control.family = control_family_gaussian,
       control.compute = list(cpo = TRUE),
       control.predictor = list(
         compute = TRUE,
         A = INLA::inla.stack.A(stk_full_joint)
       )
     )
-    cat(ts_str, "mod_joint done\n")
+    cat(info$ts_str, "mod_joint done\n")
     summary(mod_joint)
 
     # -- IMPORTANT
@@ -345,7 +452,7 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     # Hence they are ignored by the model and the predicted value is
     # the y_var without the measurement error.
 
-    #store prediction mean, sd, and quantiles
+    # store prediction mean, sd, and quantiles
     pred$time <- ts
     index <- INLA::inla.stack.index(stk_full_car, tag = "pred")$data
     pred$pred_mean_car <- mod_car$summary.fitted.values[index, "mean"]
@@ -362,13 +469,18 @@ run_bhm_join <- function(car, cws, pred, ts, sw, temp_reg, borders) {
     pred$pred_ll_joint <- mod_joint$summary.fitted.values[index, "0.025quant"]
     pred$pred_ul_joint <- mod_joint$summary.fitted.values[index, "0.975quant"]
     pred$pred_sd_joint <- mod_joint$summary.fitted.values[index, "sd"]
+    info <- as.data.frame(info)
 
+    return(list(
+      "mod_car" = mod_car,
+      "mod_cws" = mod_cws,
+      "mod_joint" = mod_joint,
+      "pred" = pred,
+      "info" = info
+    ))
+  } else {
+    return(NULL)
   }
   end_time <- Sys.time()
   cat(end_time - start_time)
-  return(list("mod_car" = mod_car,
-              "mod_cws" = mod_cws,
-              "mod_joint" = mod_joint,
-              "pred" = pred))
 }
-
