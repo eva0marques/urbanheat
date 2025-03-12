@@ -115,11 +115,11 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 12,
     height = 6,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -132,11 +132,11 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 12,
     height = 6,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -149,11 +149,11 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 12,
     height = 6,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -170,11 +170,11 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 14,
     height = 4,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -191,11 +191,11 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 14,
     height = 4,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -212,19 +212,19 @@ save_plots_paper <- function(ts_a,
       format(ts_a, "%Y%m%d%H"),
       "_",
       format(ts_b, "%Y%m%d%H"),
-      ".png"
+      ".pdf"
     ),
     width = 14,
     height = 4,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
   # evaluation plots
   p_a <- plots_eval[[1]]
   ggsave(p_a,
-    filename = paste0(out_path, "/tiles_fixed_effects.png"),
-    dpi = 300,
+    filename = paste0(out_path, "/tiles_fixed_effects.pdf"),
+    dpi = 350,
     height = 7,
     width = 12,
     bg = "white"
@@ -232,8 +232,8 @@ save_plots_paper <- function(ts_a,
 
   p_b <- plots_eval[[2]]
   ggsave(p_b,
-    filename = paste0(out_path, "/tiles_rmse.png"),
-    dpi = 300,
+    filename = paste0(out_path, "/tiles_rmse.pdf"),
+    dpi = 350,
     height = 7,
     width = 16,
     bg = "white"
@@ -241,8 +241,8 @@ save_plots_paper <- function(ts_a,
 
   p_c <- plots_eval[[3]]
   ggsave(p_c,
-    filename = paste0(out_path, "/tiles_obs_intercepts.png"),
-    dpi = 300,
+    filename = paste0(out_path, "/tiles_obs_intercepts.pdf"),
+    dpi = 350,
     height = 7,
     width = 16,
     bg = "white"
@@ -250,8 +250,8 @@ save_plots_paper <- function(ts_a,
 
   p_d <- plots_eval[[4]]
   ggsave(p_d,
-    filename = paste0(out_path, "/map_median_res.png"),
-    dpi = 300,
+    filename = paste0(out_path, "/map_median_res.pdf"),
+    dpi = 350,
     height = 12,
     width = 16,
     bg = "white"
@@ -259,8 +259,8 @@ save_plots_paper <- function(ts_a,
 
   p_e <- plots_eval[[5]]
   ggsave(p_e,
-    filename = paste0(out_path, "/density_scores.png"),
-    dpi = 300,
+    filename = paste0(out_path, "/density_scores.pdf"),
+    dpi = 350,
     height = 7,
     width = 12,
     bg = "white"
@@ -277,11 +277,11 @@ save_plots_paper <- function(ts_a,
     paste0(
       out_path,
       "tiles_hyper_prec_vs_n_",
-      ".png"
+      ".pdf"
     ),
     width = 10,
     height = 18,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 
@@ -291,11 +291,11 @@ save_plots_paper <- function(ts_a,
     paste0(
       out_path,
       "boxplot_residuals_lcz_300m_",
-      ".png"
+      ".pdf"
     ),
     width = 10,
     height = 6,
-    dpi = 300,
+    dpi = 350,
     bg = "white"
   )
 }
