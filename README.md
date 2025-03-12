@@ -1,6 +1,6 @@
 # urbanheat
 
-This repository contains the code for the BHM of the following article (under review): 
+This repository contains the code for the Bayesian model implemented in the following article (under review): 
 
 #### **Joint-likelihood Bayesian model for urban heat island inference with two crowdsourced datasets**
 
