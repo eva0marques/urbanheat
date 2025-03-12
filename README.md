@@ -1,6 +1,6 @@
 # urbanheat
 
-This repository contains the code for the article (under review): 
+This repository contains the code for the BHM of the following article (under review): 
 
 #### **Joint-likelihood Bayesian model for urban heat island inference with two crowdsourced datasets**
 
@@ -9,7 +9,7 @@ Following code needs `R (>= 4.4.1)`
 Imports: [CrowdQCplus](https://github.com/dafenner/CrowdQCplus) , [INLA](https://www.r-inla.org) , testthat, data.table, devtools, doMC, foreach, dplyr, ggplot2, ggspatial, ggpubr, sf, sftime, stats, terra, tidyr, tidyterra, tidyverse, fields, lubridate
 
 ## Data 
-Data is not provided as some datasets are not openly available. See manuscript for more details. 
+Data is not provided as some datasets are not openly available. The data processing functions are not published as they are not relevant. See manuscript for more details.
 
 
 ## Folder structure and files content 
