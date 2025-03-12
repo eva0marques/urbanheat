@@ -2,10 +2,10 @@
 library(data.table)
 library(INLA)
 library(ggplot2)
-# make sure you are on the project directory, something like ./urbanheat/
+# make sure you are on the project directory
 getwd()
 # Source all functions
-for (f in list.files("./R", full.names = TRUE)) {
+for (f in list.files("../generic", full.names = TRUE)) {
   source(f)
 }
 
