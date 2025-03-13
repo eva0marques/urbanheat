@@ -4,6 +4,8 @@ This repository contains the code for the spatial Bayesian model implemented in 
 
 #### **Joint-likelihood Bayesian model for urban heat island inference with two crowdsourced datasets**
 
+This work has been partly financed by the Centre National de Recherches Météorologiques and the Centre National de Recherche Scientifique as part of Eva Marques PhD, supervised by Dr. Philippe Naveau, Dr. Valéry Masson and Dr. Olivier Mestre. Contact: eva0marques@gmail.com
+
 ## Dependencies
 Following code needs `R (>= 4.4.1)`  
 Imports: [CrowdQCplus](https://github.com/dafenner/CrowdQCplus) , [INLA](https://www.r-inla.org) , testthat, data.table, devtools, doMC, foreach, dplyr, ggplot2, ggspatial, ggpubr, sf, sftime, stats, terra, tidyr, tidyterra, tidyverse, fields, lubridate
