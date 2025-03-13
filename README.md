@@ -1,8 +1,10 @@
 # urbanheat
 
-This repository contains the code for the Bayesian model implemented in the following article (under review): 
+This repository contains the code for the spatial Bayesian model implemented in the following article (under review): 
 
 #### **Joint-likelihood Bayesian model for urban heat island inference with two crowdsourced datasets**
+
+This work has been partly financed by the Centre National de Recherches Météorologiques and the Centre National de Recherche Scientifique as part of Eva Marques PhD, supervised by Dr. Philippe Naveau, Dr. Valéry Masson and Dr. Olivier Mestre. Contact: eva0marques@gmail.com
 
 ## Dependencies
 Following code needs `R (>= 4.4.1)`  
@@ -14,7 +16,7 @@ Data is not provided as some datasets are not openly available. The data process
 
 ## Folder structure and files content 
 - `generic/` is where the all generic functions are stored. 
-  - data processing and utils:
+  - data formatting:
     - `add_sw.R`: add solar radiation to a dataset from RADOME data (Météo-France)
     - `class_data_bhm.R`: create a class to format data input for the Bayesian model
     - `correct_altitude_gradient.R`: function to normalise the temperature within the city with regard to altitude (to avoid comparing apples and oranges when computing the urban heat island magnitude)
