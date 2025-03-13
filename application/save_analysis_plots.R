@@ -117,8 +117,8 @@ save_plots_paper <- function(ts_a,
       format(ts_b, "%Y%m%d%H"),
       ".pdf"
     ),
-    width = 12,
-    height = 6,
+    width = 14,
+    height = 7,
     dpi = 350,
     bg = "white"
   )
