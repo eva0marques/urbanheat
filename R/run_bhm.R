@@ -1,9 +1,14 @@
+#' Run Bayesian Hierarchical Model with crowdsourced data
+#' @description Run Bayesian Hierarchical Model with crowdsourced data
+#' @import INLA
+#' @author Eva Marques
+#' @export
 run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
   start_time <- Sys.time()
   coo <- sf::st_coordinates(borders)
   domain <- coo[, c("X", "Y")] |>
     INLA::inla.nonconvex.hull(concave = -.07, resolution = c(200, 200))
-
+    
   # store model parameters info
   info <- list()
 

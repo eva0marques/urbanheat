@@ -1,8 +1,7 @@
-#' S4 constructor for weather station hourly observations
+#' S4 constructor for  BHM data format
 setClass("data_bhm",
   contains = c("data.frame")
 )
-
 
 setValidity("data_bhm", function(object) {
   stopifnot(
@@ -41,28 +40,31 @@ setValidity("data_bhm", function(object) {
 #' @return a data_bhm object
 #' @importFrom methods new
 #' @importFrom dplyr rename
+#' @export
 #' @author Eva Marques
-data_bhm <- function(x,
-                     temp = "temp",
-                     lat = "lat",
-                     lon = "lon",
-                     time = "time",
-                     build_h,
-                     build_d,
-                     dem,
-                     network) {
+data_bhm <- function(
+  x,
+  temp = "temp",
+  lat = "lat",
+  lon = "lon",
+  time = "time",
+  build_h,
+  build_d,
+  dem,
+  network
+) {
   stopifnot(
     "x is not a data.frame, data.table, sf or sftime." =
       class(x)[1] %in% c("data.frame", "data.table", "sf", "sftime"),
     "time, temp, lat, lon, build_d, build_h, dem are not all characters." =
       is.character(time) &
-        is.character(temp) &
-        is.character(lat) &
-        is.character(lon) &
-        is.character(build_h) &
-        is.character(build_d) & #
-        is.character(dem),
-    "temp, lat, lon, time, build_h, build_d, dem columns missing or mispelled." =
+      is.character(temp) &
+      is.character(lat) &
+      is.character(lon) &
+      is.character(build_h) &
+      is.character(build_d) &
+      is.character(dem),
+    "Column names missing or mispelled." =
       c(temp, lat, lon, time, build_h, build_d, dem) %in% colnames(x)
   )
   x <- as.data.frame(x)
@@ -76,7 +78,16 @@ data_bhm <- function(x,
     dplyr::rename("dem" = dem)
   y$time <- as.POSIXct(y$time, tz = "UTC")
   y$network <- network
-  y <- y[, c("temp", "lat", "lon", "time", "build_h", "build_d", "dem", "network")] |>
+  y <- y[, c(
+    "temp",
+    "lat",
+    "lon",
+    "time",
+    "build_h",
+    "build_d",
+    "dem",
+    "network"
+  )] |>
     methods::new(Class = "data_bhm")
   return(y)
 }

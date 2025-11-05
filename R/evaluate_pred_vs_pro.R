@@ -1,3 +1,7 @@
+#' Evaluate predictions with regards to professional network
+#' @description Evaluate predictions with regards to professional network
+#' @author Eva Marques
+#' @export
 evaluate_pred <- function(pred, pro, info, borders) {
   ts <- unique(pred$time)
   stopifnot("not the same timestamp" = ts == as.POSIXct(info$time, tz = "UTC"))
@@ -53,12 +57,15 @@ evaluate_pred <- function(pred, pro, info, borders) {
   }
 
   # rmse
-  info$rmse_car <- sqrt(sum((pro$res_car)**2, na.rm = TRUE) /
-    length(which(!is.na(pro$res_car))))
-  info$rmse_cws <- sqrt(sum((pro$res_cws)**2, na.rm = TRUE) /
-    length(which(!is.na(pro$res_cws))))
-  info$rmse_joint <- sqrt(sum((pro$res_joint)**2, na.rm = TRUE) /
-    length(which(!is.na(pro$res_joint))))
+  info$rmse_car <- sqrt(
+    sum((pro$res_car) ** 2, na.rm = TRUE) / length(which(!is.na(pro$res_car)))
+  )
+  info$rmse_cws <- sqrt(
+    sum((pro$res_cws)**2, na.rm = TRUE) / length(which(!is.na(pro$res_cws)))
+  )
+  info$rmse_joint <- sqrt(
+    sum((pro$res_joint)**2, na.rm = TRUE) / length(which(!is.na(pro$res_joint)))
+  )
 
   # mae
   info$mae_car <- mean(abs(pro$res_car), na.rm = TRUE)
@@ -73,7 +80,10 @@ evaluate_pred <- function(pred, pro, info, borders) {
   return(list("pro" = pro, "scores" = info))
 }
 
-
+#' Calculate overall scores
+#' @description Calculate overall scores
+#' @author Eva Marques
+#' @export
 overall_scores <- function(pro_scores, y_var = "temp_sea") {
   if (y_var == "temp") {
     rsq_car <- cor(pro_scores$temp, pro_scores$pred_mean_car)**2
@@ -85,12 +95,18 @@ overall_scores <- function(pro_scores, y_var = "temp_sea") {
     rsq_joint <- cor(pro_scores$temp_sea, pro_scores$pred_mean_joint)**2
   }
 
-  rmse_car <- sqrt(sum((pro_scores$res_car)**2, na.rm = TRUE) /
-    length(which(!is.na(pro_scores$res_car))))
-  rmse_cws <- sqrt(sum((pro_scores$res_cws)**2, na.rm = TRUE) /
-    length(which(!is.na(pro_scores$res_cws))))
-  rmse_joint <- sqrt(sum((pro_scores$res_joint)**2, na.rm = TRUE) /
-    length(which(!is.na(pro_scores$res_joint))))
+  rmse_car <- sqrt(
+    sum((pro_scores$res_car)**2, na.rm = TRUE) /
+      length(which(!is.na(pro_scores$res_car)))
+  )
+  rmse_cws <- sqrt(
+    sum((pro_scores$res_cws)**2, na.rm = TRUE) /
+      length(which(!is.na(pro_scores$res_cws)))
+  )
+  rmse_joint <- sqrt(
+    sum((pro_scores$res_joint)**2, na.rm = TRUE) /
+      length(which(!is.na(pro_scores$res_joint)))
+  )
 
   # mae
   mae_car <- mean(abs(pro_scores$res_car), na.rm = TRUE)
