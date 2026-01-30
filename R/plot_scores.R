@@ -60,7 +60,7 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("DAY")),
       size = 6
     ) +
-    ggplot2::xlab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
+    ggplot2::xlab(latex2exp::TeX("$T2M_{BHM}-T2M_{ref}$ (°C)")) +
     ggplot2::labs(
       color = "",
       caption = bquote(
@@ -112,7 +112,7 @@ density_scores <- function(pro_scores, scores) {
       label = expression(bold("NIGHT")),
       size = 6
     ) +
-    ggplot2::xlab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
+    ggplot2::xlab(latex2exp::TeX("$T2M_{BHM}-T2M_{ref}$ (°C)")) +
     ggplot2::labs(
       color = "",
       caption = bquote(
@@ -217,8 +217,6 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~ .(n_pro),
-            " reference stations *",
             ~ .(n_night),
             " maps of Aug. 2018"
           )
@@ -317,8 +315,6 @@ density_scores <- function(pro_scores, scores) {
         italic(
           paste(
             "Sample of",
-            ~ .(n_pro),
-            " reference stations *",
             ~ .(n_night),
             " maps of Aug. 2018"
           )

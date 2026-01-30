@@ -182,7 +182,8 @@ tiles_rmse <- function(scores) {
       labels = to_labels(seq(0, 5, .5)),
       na.value = NA
     )
-  rmse <- ggpubr::ggarrange(p_car,
+  rmse <- ggpubr::ggarrange(
+    p_car,
     p_cws,
     p_joint,
     common.legend = TRUE,
@@ -190,6 +191,43 @@ tiles_rmse <- function(scores) {
     align = "hv"
   )
   return(rmse)
+}
+
+
+tiles_median_residuals <- function(scores) {
+  p_car <- mytile(scores, "med_res_car") +
+    ggplot2::labs(y = "", x = "UTC", fill = "Median residual (°C)") +
+    ggplot2::scale_fill_stepsn(
+      colours = load_palette("res"), breaks = seq(-3, 3, .5),
+      limits = c(-3, 3),
+      labels = to_labels(seq(-3, 3, .5)),
+      na.value = NA
+    )
+  p_cws <- mytile(scores, "med_res_cws") +
+    ggplot2::labs(y = "", x = "UTC", fill = "Median residual (°C)") +
+    ggplot2::scale_fill_stepsn(
+      colours = load_palette("res"), breaks = seq(-3, 3, .5),
+      limits = c(-3, 3),
+      labels = to_labels(seq(-3, 3, .5)),
+      na.value = NA
+    )
+  p_joint <- mytile(scores, "med_res_joint") +
+    ggplot2::labs(y = "", x = "UTC", fill = "Median residual (°C)") +
+    ggplot2::scale_fill_stepsn(
+      colours = load_palette("res"), breaks = seq(-3, 3, .5),
+      limits = c(-3, 3),
+      labels = to_labels(seq(-3, 3, .5)),
+      na.value = NA
+    )
+  res <- ggpubr::ggarrange(
+    p_car,
+    p_cws,
+    p_joint,
+    common.legend = TRUE,
+    ncol = 3,
+    align = "hv"
+  )
+  return(res)
 }
 
 

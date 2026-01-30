@@ -58,7 +58,7 @@ evaluate_pred <- function(pred, pro, info, borders) {
 
   # rmse
   info$rmse_car <- sqrt(
-    sum((pro$res_car) ** 2, na.rm = TRUE) / length(which(!is.na(pro$res_car)))
+    sum((pro$res_car)**2, na.rm = TRUE) / length(which(!is.na(pro$res_car)))
   )
   info$rmse_cws <- sqrt(
     sum((pro$res_cws)**2, na.rm = TRUE) / length(which(!is.na(pro$res_cws)))

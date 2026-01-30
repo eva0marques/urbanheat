@@ -60,7 +60,7 @@ map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
     ggplot2::scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     ggplot2::scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
     ggplot2::scale_shape_manual("", values = shape) +
-    ggplot2::labs(fill = "T2M (°C)") +
+    ggplot2::labs(fill = latex2exp::TeX("$T2M_{obs}$ (°C)")) +
     ggplot2::guides(
       fill = ggplot2::guide_colourbar(barwidth = 23, barheight = 1.5)
     ) +
@@ -95,12 +95,11 @@ map_obs <- function(car, cws, ts, borders, y_var = "temp_sea") {
 }
 
 map_pred_mean <- function(
-  pred,
-  pro,
-  borders,
-  y_var = "temp_sea",
-  model = "joint"
-) {
+    pred,
+    pro,
+    borders,
+    y_var = "temp_sea",
+    model = "joint") {
   network <- lon <- lat <- NULL
   pred_mean_model <- paste0("pred_mean_", model)
   stopifnot(
@@ -157,7 +156,7 @@ map_pred_mean <- function(
       values = shape,
       labels = "MUSTARDijon network"
     ) +
-    ggplot2::labs(fill = "T2M (°C)") +
+    ggplot2::labs(fill = latex2exp::TeX("$T2M_{BHM}$ (°C)")) +
     ggplot2::guides(
       fill = ggplot2::guide_colourbar(barwidth = 23, barheight = 1.5, order = 1)
     ) +
@@ -226,7 +225,7 @@ map_pred_sd <- function(pred, borders, model = "joint") {
     ) +
     ggplot2::scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     ggplot2::scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
-    ggplot2::labs(fill = latex2exp::TeX("$\\sigma$")) +
+    ggplot2::labs(fill = latex2exp::TeX("$\\sigma_{BHM}$")) +
     ggplot2::guides(
       fill = ggplot2::guide_colourbar(barwidth = 23, barheight = 1.5)
     ) +

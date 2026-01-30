@@ -99,11 +99,10 @@ summarize_pro_scores <- function(pro_scores, y_var = "temp_sea") {
 #' @importFrom ggspatial annotation_scale annotation_north_arrow
 #' @export
 map_median_res <- function(
-  pro_scores,
-  borders,
-  y_var = "temp_sea",
-  model = "joint"
-) {
+    pro_scores,
+    borders,
+    y_var = "temp_sea",
+    model = "joint") {
   lon <- lat <- NULL
   pro_smry_loc <- summarize_pro_scores(pro_scores, y_var)$pro_smry_loc
   res_median_model <- paste0("res_median_", model)
@@ -129,7 +128,9 @@ map_median_res <- function(
     ) +
     ggplot2::scale_x_continuous(breaks = seq(4.95, 5.15, by = .1)) +
     ggplot2::scale_y_continuous(breaks = seq(47.2, 47.4, by = .05)) +
-    ggplot2::labs(fill = latex2exp::TeX("$(T2M_{pred} - T2M_{ref})_{q0.5}$")) +
+    ggplot2::labs(
+      fill = latex2exp::TeX("$(T2M_{BHM} - T2M_{ref})_{q0.5}$ (°C)")
+    ) +
     ggplot2::guides(
       fill = ggplot2::guide_colourbar(barwidth = 40, barheight = 1.5)
     ) +
@@ -216,10 +217,9 @@ map_median_res_d_vs_n <- function(pro_scores, borders) {
 #' @author Eva Marques
 #' @export
 plot_res_vs_ref <- function(
-  pro_scores,
-  y_var = "temp_sea",
-  model = "joint"
-) {
+    pro_scores,
+    y_var = "temp_sea",
+    model = "joint") {
   res_model <- paste0("res_", model)
   ggplot2::ggplot(
     data = pro_scores,
@@ -240,7 +240,8 @@ plot_res_vs_ref <- function(
     ) +
     # geom_point() +
     ggplot2::geom_abline(
-      ggplot2::aes(slope = 0, intercept = 0), color = "red"
+      ggplot2::aes(slope = 0, intercept = 0),
+      color = "red"
     ) +
     ggplot2::geom_abline(
       ggplot2::aes(slope = 0, intercept = -1),
@@ -252,7 +253,7 @@ plot_res_vs_ref <- function(
       color = "black",
       linetype = "dotted"
     ) +
-    ggplot2::ylab(latex2exp::TeX("$T2M_{pred} - T2M_{ref}$ (°C)")) +
+    ggplot2::ylab(latex2exp::TeX("$T2M_{BHM} - T2M_{ref}$ (°C)")) +
     ggplot2::xlab(latex2exp::TeX("$T2M_{ref}$ (°C)")) +
     ggplot2::coord_equal() +
     ggplot2::theme(
@@ -282,10 +283,9 @@ plot_res_vs_ref <- function(
 #' @author Eva Marques
 #' @export
 plot_predmean_vs_ref <- function(
-  pro_scores,
-  y_var = "temp_sea",
-  model = "joint"
-) {
+    pro_scores,
+    y_var = "temp_sea",
+    model = "joint") {
   pred_model <- paste0("pred_mean_", model)
   tn <- floor(min(c(
     as.data.frame(pro_scores)[, pred_model],
@@ -314,7 +314,8 @@ plot_predmean_vs_ref <- function(
       high = load_palette("model")[model]
     ) +
     ggplot2::geom_abline(
-      ggplot2::aes(slope = 1, intercept = 0), color = "red"
+      ggplot2::aes(slope = 1, intercept = 0),
+      color = "red"
     ) +
     ggplot2::geom_abline(
       ggplot2::aes(slope = 1, intercept = -1),
@@ -326,7 +327,7 @@ plot_predmean_vs_ref <- function(
       color = "black",
       linetype = "dotted"
     ) +
-    ggplot2::ylab(latex2exp::TeX("$T2M_{pred}$ (°C)")) +
+    ggplot2::ylab(latex2exp::TeX("$T2M_{BHM}$ (°C)")) +
     ggplot2::xlab(latex2exp::TeX("$T2M_{ref}$ (°C)")) +
     ggplot2::xlim(c(tn, tx)) +
     ggplot2::ylim(c(tn, tx)) +
@@ -377,7 +378,7 @@ boxplot_res_lcz <- function(pro_scores, model = "joint") {
     ) +
     ggplot2::coord_cartesian(ylim = c(-5, 5)) +
     ggplot2::geom_hline(yintercept = 0, color = "red") +
-    ggplot2::ylab(latex2exp::TeX("$T2M_{pred}-T2M_{ref}$ (°C)")) +
+    ggplot2::ylab(latex2exp::TeX("$T2M_{BHM}-T2M_{ref}$ (°C)")) +
     ggplot2::scale_y_continuous(breaks = seq(-5, 5, 1)) +
     ggplot2::xlab("") +
     ggplot2::labs(fill = "Local Climate Zone") +

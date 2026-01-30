@@ -9,7 +9,8 @@ store_post_info <- function(mod, info) {
   list_marg <- mod$marginals.fixed
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(
-    names(list_marg), times = sapply(list_marg, nrow)
+    names(list_marg),
+    times = sapply(list_marg, nrow)
   )
   marg_m <- unlist(lapply(
     X = list_marg,
@@ -34,7 +35,8 @@ store_post_info <- function(mod, info) {
   names(list_marg) <- c("prec_car", "prec_cws", "range_s", "sd_s")
   marginals <- data.frame(do.call(rbind, list_marg))
   marginals$fixed.effects <- rep(
-    names(list_marg), times = sapply(list_marg, nrow)
+    names(list_marg),
+    times = sapply(list_marg, nrow)
   )
   marg_m <- unlist(lapply(
     X = list_marg,
