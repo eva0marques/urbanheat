@@ -1,3 +1,8 @@
+#' Run Bayesian Hierarchical Model with crowdsourced data
+#' @description Run Bayesian Hierarchical Model with crowdsourced data
+#' @import INLA
+#' @author Eva Marques
+#' @export
 run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
   start_time <- Sys.time()
   coo <- sf::st_coordinates(borders)
@@ -82,13 +87,35 @@ run_bhm <- function(car, cws, pred, ts, sw, temp_reg, borders) {
       boundary = domain
     )
 
-    # plot mesh
-    # plot(mesh_joint)
-    # points(cbind(car_samp$lon, car_samp$lat), col = "red")
-    # points(cbind(cws_samp$lon, cws_samp$lat), col = "blue")
+    # Save the mesh plot as a PDF
+    pdf(
+      paste0(
+        "./application/output_20251215-gradientalt/mesh_joint_plot",
+        info$ts_str,
+        ".pdf"
+      )
+    )
+    plot(mesh_joint)
+    points(cbind(car_samp$lon, car_samp$lat), pch = 5, col = "#FF0800")
+    points(cbind(cws_samp$lon, cws_samp$lat), pch = 0, col = "#00BFFF")
+    legend(
+      x = "bottomright",
+      legend = c("car", "cws"),
+      fill = c("#FF0800", "#00BFFF")
+    )
+    dev.off()
+
+    plot(mesh_joint)
+    points(cbind(car_samp$lon, car_samp$lat), pch = 5, col = "#FF0800")
+    points(cbind(cws_samp$lon, cws_samp$lat), pch = 0, col = "#00BFFF")
+    legend(
+      x = "bottomright",
+      legend = c("car", "cws"),
+      fill = c("#FF0800", "#00BFFF")
+    )
+    #dev.off()
 
     # spde model
-
     info$r0 <- 0.05
     info$p_r0 <- 0.99
     info$sd0 <- 2

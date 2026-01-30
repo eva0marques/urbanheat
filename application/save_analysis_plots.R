@@ -56,8 +56,9 @@ plot_ts <- function(ts, out_path, car, cws, pred, rad, borders) {
 
 
 
-plot_eval <- function(out_path) {
+plot_eval <- function(out_path, borders) {
   scores <- read.csv(paste0(out_path, "scores_201808_dijon.csv"))
+  scores <- scores[which(!duplicated(scores$ts_str)), ]
   scores$time <- as.POSIXct(scores$time,
     format = "%Y-%m-%d %H:%M:%S",
     tz = "UTC"
@@ -87,27 +88,30 @@ plot_eval <- function(out_path) {
   p_i <- boxplot_res_lcz(pro_scores)
   p_j <- plot_predmean_vs_ref(pro_scores)
   p_k <- plot_res_vs_ref(pro_scores)
+  p_l <- tiles_median_residuals(scores)
 
-  return(list(p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i, p_j, p_k))
+  return(list(p_a, p_b, p_c, p_d, p_e, p_f, p_g, p_h, p_i, p_j, p_k, p_l))
 }
 
 
-save_plots_paper <- function(ts_a,
-                             ts_b,
-                             out_path,
-                             car,
-                             cws,
-                             pred,
-                             rad,
-                             borders) {
+save_plots_paper <- function(
+  ts_a,
+  ts_b,
+  out_path,
+  car,
+  cws,
+  pred,
+  rad,
+  borders
+) {
   # generate all plots
   plots_ts_a <- plot_ts(ts_a, out_path, car, cws, pred, rad, borders)
   plots_ts_b <- plot_ts(ts_b, out_path, car, cws, pred, rad, borders)
-  plots_eval <- plot_eval(out_path)
+  plots_eval <- plot_eval(out_path, borders)
 
   # specific timestamp* plots
   p3 <- ggpubr::ggarrange(plots_ts_a[[3]], plots_ts_b[[3]], ncol = 2)
-  ggsave(
+  ggplot2::ggsave(
     plot = p3,
     paste0(
       out_path,
@@ -124,7 +128,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p4 <- ggpubr::ggarrange(plots_ts_a[[4]], plots_ts_b[[4]], ncol = 2)
-  ggsave(
+  ggplot2::ggsave(
     plot = p4,
     paste0(
       out_path,
@@ -141,7 +145,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p5 <- ggpubr::ggarrange(plots_ts_a[[5]], plots_ts_b[[5]], ncol = 2)
-  ggsave(
+  ggplot2::ggsave(
     plot = p5,
     paste0(
       out_path,
@@ -162,7 +166,7 @@ save_plots_paper <- function(ts_a,
     ncol = 2,
     common.legend = TRUE
   )
-  ggsave(
+  ggplot2::ggsave(
     plot = p7,
     paste0(
       out_path,
@@ -183,7 +187,7 @@ save_plots_paper <- function(ts_a,
     ncol = 2,
     common.legend = TRUE
   )
-  ggsave(
+  ggplot2::ggsave(
     plot = p6,
     paste0(
       out_path,
@@ -204,7 +208,7 @@ save_plots_paper <- function(ts_a,
     ncol = 2,
     common.legend = TRUE
   )
-  ggsave(
+  ggplot2::ggsave(
     plot = p8,
     paste0(
       out_path,
@@ -222,7 +226,7 @@ save_plots_paper <- function(ts_a,
 
   # evaluation plots
   p_a <- plots_eval[[1]]
-  ggsave(p_a,
+  ggplot2::ggsave(p_a,
     filename = paste0(out_path, "/tiles_fixed_effects.pdf"),
     dpi = 350,
     height = 7,
@@ -231,7 +235,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p_b <- plots_eval[[2]]
-  ggsave(p_b,
+  ggplot2::ggsave(p_b,
     filename = paste0(out_path, "/tiles_rmse.pdf"),
     dpi = 350,
     height = 7,
@@ -240,7 +244,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p_c <- plots_eval[[3]]
-  ggsave(p_c,
+  ggplot2::ggsave(p_c,
     filename = paste0(out_path, "/tiles_obs_intercepts.pdf"),
     dpi = 350,
     height = 7,
@@ -249,7 +253,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p_d <- plots_eval[[4]]
-  ggsave(p_d,
+  ggplot2::ggsave(p_d,
     filename = paste0(out_path, "/map_median_res.pdf"),
     dpi = 350,
     height = 12,
@@ -258,7 +262,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p_e <- plots_eval[[5]]
-  ggsave(p_e,
+  ggplot2::ggsave(p_e,
     filename = paste0(out_path, "/density_scores.pdf"),
     dpi = 350,
     height = 7,
@@ -272,7 +276,7 @@ save_plots_paper <- function(ts_a,
     plots_eval[[8]],
     nrow = 3
   )
-  ggsave(
+  ggplot2::ggsave(
     plot = p_fgh,
     paste0(
       out_path,
@@ -286,7 +290,7 @@ save_plots_paper <- function(ts_a,
   )
 
   p_i <- plots_eval[[9]]
-  ggsave(
+  ggplot2::ggsave(
     plot = p_i,
     paste0(
       out_path,
@@ -296,6 +300,15 @@ save_plots_paper <- function(ts_a,
     width = 10,
     height = 6,
     dpi = 350,
+    bg = "white"
+  )
+
+  p_l <- plots_eval[[12]]
+  ggplot2::ggsave(p_l,
+    filename = paste0(out_path, "/tiles_median_residuals.pdf"),
+    dpi = 350,
+    height = 7,
+    width = 16,
     bg = "white"
   )
 }

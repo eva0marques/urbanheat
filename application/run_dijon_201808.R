@@ -1,9 +1,15 @@
-run_case_study <- function(r_path, in_path, out_path) {
-  # load all functions
-  for (f in list.files(r_path, full.names = TRUE)) {
-    source(f)
-  }
+# load urbanheat package
+library(devtools)
+load_all()
 
+# parameters
+in_path <- paste0(getwd(), "/application/input/")
+out_path <- paste0(getwd(), "/application/output_20251215-gradientalt/")
+t_start <- as.POSIXct("2018-08-30 23:00:00", tz = "UTC")
+t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
+set.seed(12)
+
+run_case_study <- function(in_path, out_path, t_start, t_end) {
   # create out_path if does not exist
   dir.create(out_path, showWarnings = FALSE)
 
@@ -88,6 +94,14 @@ run_case_study <- function(r_path, in_path, out_path) {
   )) |>
     format_pred("lat", "lon", "H_MEAN", "BUILD_DENS", "dem")
 
+  # add pro stations to prediction grid for better score calculations
+  pred$type <- "grid"
+  pro_for_pred <- pro[, c("lon", "lat", "build_h", "build_d", "dem")] |>
+    dplyr::distinct() |>
+    na.omit()
+  pro_for_pred$type <- "pro"
+  pred <- rbind(pred, pro_for_pred)
+
   rad <- read.csv(paste0(
     in_path,
     "radome_2018010100_2019010100_dijonlongevic.csv"
@@ -97,8 +111,6 @@ run_case_study <- function(r_path, in_path, out_path) {
   # run model on every hour of 2018/08 in Dijon (France)
 
   set.seed(12)
-  t_start <- as.POSIXct("2018-08-25 19:00:00", tz = "UTC")
-  t_end <- as.POSIXct("2018-08-31 23:00:00", tz = "UTC")
   period <- seq(t_start, t_end, by = "1 hour")
   for (p in period) {
     p_str <- strftime(p, format = "%Y-%m-%d %H:%M:%S", tz = "UTC") |>
@@ -158,3 +170,5 @@ run_case_study <- function(r_path, in_path, out_path) {
     }
   }
 }
+
+run_case_study(in_path, out_path, t_start, t_end)
